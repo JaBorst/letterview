@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+	
+	<!--LocalRessources-->
+	<link rel="stylesheet" href="stylesheets/letterview.css">
+	<link rel="stylesheet" href="stylesheets/scContainer.css">
+	<link rel="stylesheet" href="stylesheets/timeline.css">
+	<link rel="stylesheet" href="stylesheets/wordcloud.css">
+	
+	<!--RemoteResources-->
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic' rel='stylesheet' type='text/css'>
+    
+	
+
+
+</head>
+<body>
+<div id="LayoutContainer" >
+	<table id="MainLayoutTable">
+	  <tr>
+		<td colspan="2" bgcolor="#b5dcb3">
+		  <h1>This is Web Page Main title</h1>
+		  <button id="myBtn">Select Corpus</button>
+		  <!-- The Modal -->
+		  <div id="myModal" class="modal">
+		  <!-- Modal content -->
+		  <div class="modal-content">
+			<span class="close">&times;</span><p>Some text in the Modal..</p>
+		  </div>
+		  </div>
+		</td>
+	  </tr>
+	  <tr id="TwoPane" >
+		<td id="TimeLineColumn" >
+			<!-- Start of the Scrollable Components-->
+			<div class="Container">
+				<div class="ScrollableDiv">
+					<div class="ScrollableContent">
+						<!-- Scrollable TimeLine  Content here-->
+						<ul class="timeline" id="mainTimeLine"></ul>
+						
+					</div>
+				</div>
+			</div>
+		</td>
+		<td id="application" >
+		  	<!-- Start of the Scrollable Components-->
+			<div class="Container">
+				<div class="ScrollableDiv">
+					<div class="ScrollableContent">
+						<!-- Scrollable Content here-->
+						<div id="wordcloud" ></div>
+					</div>
+				</div>
+			</div>
+		</td>
+	  </tr>
+	 
+	</table>
+</div>
+
+
+	<!--RemoteResources-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	
+	<!--LocalRessources-->
+	<script src='js/sql.js'></script>
+	<script src='js/timeline.js'></script>
+	<script src='js/wordcloud.js'></script>
+
+</body>
+</html>

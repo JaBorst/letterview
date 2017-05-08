@@ -1,0 +1,28 @@
+body, html {
+	background-color: gray;
+	height: 98vh;
+}
+
+
+#LayoutContainer{
+	background-color: rgb(179, 179, 179);
+	height: 100%;
+}
+
+#MainLayoutTable{
+	/*background-color: yellow;*/
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+
+#TwoPane{
+	height: 100%;
+	/*background-color: yellow;*/
+}
+#TimeLineColumn{
+	width: 40%;
+	/*background-color: gray;*/
+
+}
