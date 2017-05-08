@@ -1,6 +1,6 @@
 import os.path
-
-from flask import Flask, Response, url_for, send_file, request
+import wordclouds
+from flask import Flask, Response, url_for, send_file, request, jsonify
 
 
 app = Flask(__name__)
@@ -61,9 +61,13 @@ def db():
 def hello():
 	print("something")
 	print(request.json)
-	
-	
-	return "<h1>Hello World!</h1>"
+	wc = wordclouds.getCorpusJSON(request.json)
+	print("Corpus Retrieved")
+	fd = wordclouds.getWordCloudWords(wc)
+	print("Words Counted")
+	print(fd)
+	return jsonify(fd)
+
 
 
 
