@@ -58,16 +58,22 @@ def db():
 
 
 @app.route("/ptagcloudapi", methods=['GET', 'POST'])
-def hello():
+def ptagclouds():
 	print("something")
 	print(request.json)
-	wc = wordclouds.getCorpusJSON(request.json)
-	print("Corpus Retrieved")
-	fd = wordclouds.getWordCloudWords(wc)
+	fd = wordclouds.getPWordCloudWords(request.json)
 	print("Words Counted")
 	print(fd)
 	return jsonify(fd)
 
+
+@app.route("/tagcloudapi", methods=['GET', 'POST'])
+def tagclouds():
+	print("tagclouds")
+	print(request.json)
+	wc = wordclouds.getWordCloudWords(request.json)
+
+	return jsonify(wc)
 
 
 

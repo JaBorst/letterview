@@ -34,13 +34,13 @@ xhr.onload = function(e) {
     /*the space between two vertical adjacent letters is ajusted according to the time difference, each day for 5px*/
     var correspondingPaddingBottomNum = Math.abs(intervalTwoLetters * 5 + 18);
     if (correspondingPaddingBottomNum > 1000) {
-      correspondingPaddingBottomNum = 150;
+      correspondingPaddingBottomNum = 150;y
     }
     var correspondingPaddingBottom = correspondingPaddingBottomNum + "px";
     var dateTime = contents[0].values[i][4] + "&nbsp&nbsp" + monthAbbr[parseInt(contents[0].values[i][3])-1] + "&nbsp" + contents[0].values[i][2];
     linkUrl = contents[0].values[i][6];
     letterContent = contents[0].values[i][5].slice(0, 200);
-    $("#mainTimeLine").append("<li style='padding-bottom:"+ correspondingPaddingBottom +"'><div class='"+direction+"'><div class='flag-wrapper'><span class='flag'>"+author+"</span><span class='time-wrapper'><span class='time'>"+dateTime+"</span></span></div><div class='desc'>"+letterContent+"..."+"<a href='"+linkUrl+"' target='_blank'>Mehr dazu</a></div></div></li>");
+    $("#mainTimeLine").append("<li style='padding-bottom:"+ correspondingPaddingBottom +"'><div class='"+direction+"'><div class='flag-wrapper'><span class='flag'>"+author+"</span><span class='time-wrapper'><span class='time'>"+dateTime+"</span></span></div><div class='desc'>"+letterContent+"..."+"<a onclick=openLetter('"+linkUrl+"') >Mehr dazu</a></div></div></li>");
   }
 };
 xhr.send();

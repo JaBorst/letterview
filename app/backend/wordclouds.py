@@ -128,11 +128,11 @@ def getCorpusJSON(data):
 
 
 
-def getWordCloudWords(corpora):
-		
+def getPWordCloudWords(data):
+	js = getCorpusJSON(data)
 	freq = {}
-	for c in corpora.keys():
-		corpus = corpora[c]
+	for c in js.keys():
+		corpus = js[c]
 		f = FreqDist(corpus)
 		for w,count in f.most_common(10):
 			if c not in freq.keys():
@@ -141,12 +141,24 @@ def getWordCloudWords(corpora):
 		
 	return freq
 		
+def getWordCloudWords(data):
+	js = getCorpusJSON(data)
+	#print(js)
+	freq = {}
+	for c in js.keys():
+		corpus = js[c]
+		f = FreqDist(corpus)
+		for w, count in f.most_common(10):
+			if c not in freq.keys():
+				freq[c] = []
+			freq[str(c)] += [{"word": w, "freq": count}]
 
+	return freq
 
 
 def main():
 	print(2)
-	fd = getWordCloudWords(getCorpusJSON(testData))
+	fd = getWordCloudWords(testData)
 	print (fd)
 	
 if __name__ == '__main__':
