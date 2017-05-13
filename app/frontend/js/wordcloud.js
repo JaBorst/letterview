@@ -23,14 +23,14 @@ function createWordCloud(){
 		//Parse Response
 		console.log("wordcloud xhr-onload");
 		var objResponse = JSON.parse(this.response);
-		var words = objResponse.Corpus1;
 		var corpusCount=0;
-		
+		//console.log("objResponse: ",objResponse);
 		var table = document.createElement("table");
 		node.appendChild(table);
 		var currentRow ;
 		for (var corp in objResponse){
 			var words = objResponse[corp];
+			//console.log(words.value);
 			corpusCount += 1;
 
 			if (corpusCount % 2 === 1){
@@ -42,7 +42,7 @@ function createWordCloud(){
 			currentField.setAttribute("id", corp);
 			currentFieldID = corp;
 			currentRow.appendChild(currentField);
-			console.log(words);
+
 			wordMap = words.map( function(d) { return {text: d.word, size: d.freq, test: "haha"}; } ) ; 
 			console.log(wordMap);
 			layout= d3.layout.cloud()

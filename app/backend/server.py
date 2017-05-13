@@ -2,6 +2,7 @@ import os.path
 import wordclouds
 from flask import Flask, Response, url_for, send_file, request, jsonify
 
+from corpus import *
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -61,17 +62,25 @@ def db():
 def ptagclouds():
 	print("something")
 	print(request.json)
-	fd = wordclouds.getPWordCloudWords(request.json)
-	print("Words Counted")
-	print(fd)
-	return jsonify(fd)
+	c = CorpusSplits()
+	c.initByDate(request.json)
+
+	c.getInfo()
+	wc = c.getPWordCloudJS(20)
+	print(wc)
+	return jsonify(wc)
 
 
 @app.route("/tagcloudapi", methods=['GET', 'POST'])
 def tagclouds():
 	print("tagclouds")
 	print(request.json)
-	wc = wordclouds.getWordCloudWords(request.json)
+	c = CorpusSplits()
+	c.initByDate(request.json)
+
+	c.getInfo()
+	wc = c.getWordCloudJS(20)
+
 
 	return jsonify(wc)
 

@@ -97,12 +97,13 @@ function CreateParallelWordClouds(j){
 		colors= ["#FFFFFF", "#DDDDDD"];
 		var i = 0;
 		for (var corp in objResponse){
-			console.log(corp);
+			console.log(objResponse[corp]);
 			var col = document.createElement("td");
 			i = (i+1) % 2;
 			col.setAttribute("bgcolor", colors[i]);
 			for (var w in objResponse[corp]){
-			col.innerHTML += w + '<br>';
+				console.log(w)
+				col.innerHTML += w + '<br>';
 			}
 		row.appendChild(col);
 

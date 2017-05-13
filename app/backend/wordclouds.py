@@ -10,6 +10,14 @@ testData = { "1": {"start": "1794-6-13" , "end": "1794-12-25"}
 			, "3" : {"start": "1796-6-10" , "end": "1798-5-25"}
 		}
 
+def tokenizeCorpus(corpus=[]):
+	translate_table = dict((ord(char), None) for char in string.punctuation)
+	stop = set(stopwords.words('german'))
+	t = []
+	for l in corpus:
+		t += [i.lower() for i in word_tokenize(l.translate(translate_table)) if i.lower() not in stop and i.isalpha()]
+
+	return t
 
 
 
@@ -87,7 +95,7 @@ def getCorpus2(start="", end=""):
 							  int(end.split('-')[1]),
 							  int(end.split('-')[2]))
 	
-	db = "/home/jb/git/LettersView/src/src/example.db"
+	db = "example.db"
 	conn = sqlite3.connect(db)
 	c = conn.cursor()
 	
@@ -96,34 +104,25 @@ def getCorpus2(start="", end=""):
 	c.execute("select id, date from letters where year<=%s and month<=%s and day<=%s and year !=0 ORDER BY id DESC LIMIT 1;"% (endDate.year, endDate.month, endDate.day))
 	endID = c.fetchall()[0][0]
 	
-	sql="SELECT CONTENT FROM letters where id>=%s and id <= %s;" % (startID, endID)
+	sql="SELECT id,content FROM letters where id>=%s and id <= %s;" % (startID, endID)
 	#print(sql)
 	c.execute(sql)
 	corpus = []
 	for row in c:
-		corpus.append(row[0])
+		corpus.append(row[1])
 		
 	return corpus
 	
-	
-def tokenizeCorpus(corpus=[]):
-	translate_table = dict((ord(char), None) for char in string.punctuation)
-	stop = set(stopwords.words('german'))
-	t = []
-	for l in corpus:
-		t+=[i.lower() for i in word_tokenize(l.translate(translate_table)) if i.lower() not in stop and i.isalpha()]
-		
-	
-	return t
+
 
 def getCorpusJSON(data):
 	js = {}
 	for l in data.keys():
 		#print(data[l]['start'])
 		#print(data[l]['end'])
-		letters = tokenizeCorpus(getCorpus2(data[l]["start"],data[l]["end"]))
+		letters = tokenizeCorpus(getCorpus2(data[l]["start"], data[l]["end"]))
 		js[l] = letters
-		#print(letters)
+		print(letters)
 	return js
 
 
