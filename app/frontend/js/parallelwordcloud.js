@@ -119,10 +119,16 @@ function CreateParallelWordClouds(j){
 			for (var w in objResponse[corp]){
 				console.log(w)
 				var entry = document.createElement("tr");
-				entry.innerHTML += w;
+				var entryDiv = document.createElement("div");
+				entryDiv.setAttribute("id","ptagdiv");
+				
+				entryDiv.innerHTML += w;
 				var colorEntry = intToRGB(hashCode(w));
 				console.log(colorEntry);
-				entry.style.backgroundColor = "#" + colorEntry;
+				entryDiv.style.backgroundColor = "#" + colorEntry;
+				
+				
+				entry.append(entryDiv);
 				col.append(entry);
 			}
 		row.appendChild(col);

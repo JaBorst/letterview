@@ -55,3 +55,16 @@
     text-decoration: none;
     cursor: pointer;
 }
+
+#ptagdiv {
+
+	background-color: yellow;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	border-bottom-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	border: 2px solid #AAAAAA;
+
+	padding: 10px; 
+	margin: 5px;
+}
