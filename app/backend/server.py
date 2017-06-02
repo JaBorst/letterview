@@ -66,7 +66,7 @@ def ptagclouds():
 	c.initByDate(request.json)
 
 	c.getInfo()
-	wc = c.getPWordCloudJS(20)
+	wc = c.getPWordCloudJS(10)
 	print(wc)
 	return jsonify(wc)
 
@@ -79,7 +79,7 @@ def tagclouds():
 	c.initByDate(request.json)
 
 	c.getInfo()
-	wc = c.getWordCloudJS(20)
+	wc = c.getWordCloudJS(10)
 
 
 	return jsonify(wc)

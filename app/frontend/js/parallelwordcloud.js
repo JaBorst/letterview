@@ -41,6 +41,21 @@ function addDateInput(n){
 	}
 }
 
+function hashCode(str) { // java String#hashCode
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+       hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return hash;
+} 
+
+function intToRGB(i){
+    var c = (i & 0x00FFFFFF)
+        .toString(16)
+        .toUpperCase();
+
+    return "00000".substring(0, 6 - c.length) + c;
+}
 function CorpusSelectionSubmit(){
 	console.log("submit the corpusdates");
 	
@@ -100,10 +115,15 @@ function CreateParallelWordClouds(j){
 			console.log(objResponse[corp]);
 			var col = document.createElement("td");
 			i = (i+1) % 2;
-			col.setAttribute("bgcolor", colors[i]);
+			//col.setAttribute("bgcolor", colors[i]);
 			for (var w in objResponse[corp]){
 				console.log(w)
-				col.innerHTML += w + '<br>';
+				var entry = document.createElement("tr");
+				entry.innerHTML += w;
+				var colorEntry = intToRGB(hashCode(w));
+				console.log(colorEntry);
+				entry.style.backgroundColor = "#" + colorEntry;
+				col.append(entry);
 			}
 		row.appendChild(col);
 
