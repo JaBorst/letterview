@@ -105,10 +105,10 @@ class Corpus:
 
 
 	def getWordCloudJS(self, n=20):
-		return [{"word": w, "freq": f } for (w, f) in self.getHighestRanked(n=20)]
+		return [{"word": w, "freq": f } for (w, f) in self.getHighestRanked(n)]
 
 	def getPWordCloudJS(self, n=20):
-		return {w: f for (w, f) in self.getHighestRanked(n=20)}
+		return {w: f for (w, f) in self.getHighestRanked(n)}
 
 
 class CorpusSplits:

@@ -55,7 +55,6 @@
     text-decoration: none;
     cursor: pointer;
 }
-
 #ptagdiv {
 
 	background-color: yellow;
@@ -64,7 +63,7 @@
 	border-bottom-right-radius: 6px;
 	border-bottom-left-radius: 6px;
 	border: 2px solid #AAAAAA;
-
+	display: inline-block;
 	padding: 10px; 
 	margin: 5px;
 }
