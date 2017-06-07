@@ -5,6 +5,8 @@ from nltk.corpus import stopwords
 import string
 import operator
 
+import numpy as np
+
 testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
 			, "2" : {"start": "1796-6-10" , "end": "1797-2-28"}
 			, "3" : {"start": "1796-6-10" , "end": "1798-5-25"}
@@ -108,7 +110,11 @@ class Corpus:
 		return [{"word": w, "freq": f } for (w, f) in self.getHighestRanked(n)]
 
 	def getPWordCloudJS(self, n=20):
-		return {w: f for (w, f) in self.getHighestRanked(n)}
+		highest = self.getHighestRanked(n)
+		print("highest", highest)
+		max = highest[0][1]
+		print("Maximum", max)
+		return {w: float(f)/float(max) for (w, f) in highest}
 
 
 class CorpusSplits:
@@ -150,7 +156,7 @@ def main():
 	c.getInfo()
 	word="zeitschrift"
 	print(word, c.gettfidf(word))
-	print(c.getWordCloudJS(20))
+	print(c.getPWordCloudJS(20))
 
 if __name__ == "__main__":
 	main()

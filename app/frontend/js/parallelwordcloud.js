@@ -68,7 +68,7 @@ function createForeignObject(cont,x ,y , size){
 	var div = document.createElement("div");
 	div.setAttribute("id", "ptagdiv");
 	div.style.backgroundColor = "#" + intToRGB(hashCode(cont));
-	div.style.fontSize = String(size)+"px";
+	div.style.fontSize = String(size)+"pt";
 	div.innerHTML= cont;
 	fo.append(div);
 	console.log("foreignObject created" + intToRGB(hashCode(w)));
@@ -76,50 +76,86 @@ function createForeignObject(cont,x ,y , size){
 
 }
 
+
 function createSVGContent(svgelement, wordData){
 	var x = 40;
 	var y = 20;
 	var ydelta = 40;
 	var xdelta = 200;
 
-	//var connectWords = {};
-	//
-	////Find out if there are words to connect
-	//console.log(Object.keys(wordData).length);
-	//for(var i = 1; i < Object.keys(wordData).length; i++) {
-	//	console.log(i);
-	//
-	//	corpusKeys1 = Object.keys(wordData[Object.keys(wordData)[i]]);
-	//
-	//	corpusKeys2 = Object.keys(wordData[Object.keys(wordData)[i-1]]);
-	//	console.log(corpusKeys1);
-	//	var common = $.grep(corpusKeys1, function(element) {
-	//		    return $.inArray(element, corpusKeys2 ) !== -1;});
-	//
-	//	for (var w in common){
-	//		connectWords[Object.keys(wordData)[i]] = {};
-	//		connectWords[Object.keys(wordData)[i]][w] = {};
-	//	}
-	//}
-	//console.log("connect Words:");
-	//console.log(connectWords);
+	var connectWords = {};
+
+	//Find out if there are words to connect
+	console.log(Object.keys(wordData).length);
+	for(var i = 1; i < Object.keys(wordData).length; i++) {
+		console.log(i);
+
+		corpusKeys1 = Object.keys(wordData[Object.keys(wordData)[i]]);
+
+		corpusKeys2 = Object.keys(wordData[Object.keys(wordData)[i-1]]);
+		console.log(corpusKeys1);
+		var common = $.grep(corpusKeys1, function(element) {
+			    return $.inArray(element, corpusKeys2 ) !== -1;
+			});
+
+		for (w in common){
+			connectWords[Object.keys(wordData)[i]] = {};
+			connectWords[Object.keys(wordData)[i]][w] = {};
+		}
+	}
+	console.log(connectWords);
 
 	var i = 0 ;
+	savedCoordinates={};
+	savedCoordinatesActual = {};
 	for (corp in wordData){
 		var y = 20;
 		for (w in wordData[corp]){
-			var fsize = wordData[corp][w]; 
-			console.log(w + " " + fsize + "x: " + x);
+
+
+			//New ELEMENT
+			var fsize = wordData[corp][w] * 50; 
+			//console.log(w + " " + fsize + "x: " + x);
 			y = y + ydelta;
 			svgelement.append(createForeignObject(w,x,y,fsize));
 
+			//Now See if we already got that element last column
+			if (savedCoordinates.hasOwnProperty(w)){
+				console.log("This word occured last column: " + w);
+				console.log("Coordinates: x:" + savedCoordinates[w]['x'] + " y:" + savedCoordinates[w]['y']);
+
+				paddingCorrection = 15 + 10;
+
+				oldX = savedCoordinates[w]['x'] + paddingCorrection;
+				oldY = savedCoordinates[w]['y'] + paddingCorrection;
+
+				var l = document.createElementNS('http://www.w3.org/2000/svg',"line");
+				l.setAttribute("x1",oldX);
+				l.setAttribute("y1",oldY);
+				l.setAttribute("x2",x + paddingCorrection);
+				l.setAttribute("y2",y + paddingCorrection);
+				l.setAttribute("stroke-opacity","0.5");
+				l.setAttribute('stroke-width',"2");
+				l.setAttribute('stroke',"#" + intToRGB(hashCode(w)));
+				svgelement.append(l);
+
+			}
+
+			savedCoordinatesActual[w] = {};
+			savedCoordinatesActual[w]['x'] = x;
+			savedCoordinatesActual[w]['y'] = y;
+
 		}
+		savedCoordinates = {}
+		savedCoordinates = savedCoordinatesActual;
+		savedCoordinatesActual = {};
 		x = x + xdelta;
 		i = i + 1;
 	}
 
 
 }
+
 function CorpusSelectionSubmit(){
 	console.log("submit the corpusdates");
 	
