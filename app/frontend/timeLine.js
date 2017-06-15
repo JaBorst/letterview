@@ -1,4 +1,3 @@
-/* send XMLHTTP request to the local server 127.0.0.1:8887 for the query of sqlite db, it seems the only way to bind sqlite database and html as far as I know for now, and 'sql.js' must be downloaded and included, if back-end server is built, this step can be skipped, all the infos can be transfered to the front via json data*/
 console.log("Creating Timeline");
 var xhr = new XMLHttpRequest();
 xhr.open('GET', 'example.db', true);
@@ -30,14 +29,14 @@ xhr.onload = function(e) {
     var dayNextLetter = contents[0].values[i+1][2] * 365 + contents[0].values[i+1][3] * 30 + contents[0].values[i+1][4];
     var intervalTwoLetters = dayNextLetter - dayThisLetter;
     /*the space between two vertical adjacent letters is ajusted according to the time difference, each day for 5px*/
-    var correspondingPaddingBottomNum = Math.abs(intervalTwoLetters * 5 + 18);
+    var correspondingPaddingBottomNum = Math.abs(intervalTwoLetters * 2 + 5);
     if (correspondingPaddingBottomNum > 1000) {
       correspondingPaddingBottomNum = 150;
     }
     var correspondingPaddingBottom = correspondingPaddingBottomNum + "px";
     var dateTime = contents[0].values[i][4] + "&nbsp&nbsp" + monthAbbr[parseInt(contents[0].values[i][3])-1] + "&nbsp" + contents[0].values[i][2];
     linkUrl = contents[0].values[i][6];
-    letterContent = contents[0].values[i][5].slice(0, 200);
+    letterContent = contents[0].values[i][5].slice(0, 130);
     $("#mainTimeLine").append("<li style='padding-bottom:"+ correspondingPaddingBottom +"'><div class='"+direction+"'><div class='flag-wrapper'><span class='flag'>"+author+"</span><span class='time-wrapper'><span class='time'>"+dateTime+"</span></span></div><div class='desc'>"+letterContent+"..."+"<a href='"+linkUrl+"' target='_blank'>Mehr dazu</a></div></div></li>");
   }
 };
