@@ -79,7 +79,8 @@ def tagclouds():
 	c.initByDate(request.json)
 
 	c.getInfo()
-	wc = c.getWordCloudJS(10)
+	wc = c.getWordCloudJS(20)
+	print(wc)
 
 
 	return jsonify(wc)

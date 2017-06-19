@@ -46,7 +46,7 @@ function createWordCloud(){
 			wordMap = words.map( function(d) { return {text: d.word, size: d.freq, test: "haha"}; } ) ; 
 			console.log(wordMap);
 			layout= d3.layout.cloud()
-			   .size([200, 200])
+			   .size([300, 300])
 			   .words(wordMap)
 			   .padding(5)
 			   .font("Impact")

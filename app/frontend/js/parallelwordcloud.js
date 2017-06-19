@@ -48,7 +48,14 @@ function hashCode(str) { // java String#hashCode
        hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
     return hash;
-} 
+}
+
+
+function displaySelectedSection(w, corpusName){
+	console.log("Clicked On " + w);
+	console.log("in Corpus: " + result[corpusName]["start"]);
+	
+}
 
 function intToRGB(i){
     var c = (i & 0x00FFFFFF)
@@ -56,6 +63,17 @@ function intToRGB(i){
         .toUpperCase();
 
     return "00000".substring(0, 6 - c.length) + c;
+}
+function hexToRGB(hex, alpha) {
+    var r = parseInt(hex.slice(1, 3), 16),
+        g = parseInt(hex.slice(3, 5), 16),
+        b = parseInt(hex.slice(5, 7), 16);
+
+    if (alpha) {
+        return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+    } else {
+        return "rgb(" + r + ", " + g + ", " + b + ")";
+    }
 }
 
 function createForeignObject(cont,x ,y , size){
@@ -67,11 +85,11 @@ function createForeignObject(cont,x ,y , size){
     fo.setAttribute('height',"100%");
 	var div = document.createElement("div");
 	div.setAttribute("id", "ptagdiv");
-	div.style.backgroundColor = "#" + intToRGB(hashCode(cont));
+	div.style.backgroundColor =  hexToRGB("#" + intToRGB(hashCode(cont)), 0.4 );
 	div.style.fontSize = String(size)+"pt";
 	div.innerHTML= cont;
 	fo.append(div);
-	console.log("foreignObject created" + intToRGB(hashCode(w)));
+	console.log("foreignObject created" + intToRGB(hashCode(w)) +"  fade(#" + intToRGB(hashCode(cont)) + ", 80%)" );
 	return fo;
 
 }
@@ -114,10 +132,12 @@ function createSVGContent(svgelement, wordData){
 
 
 			//New ELEMENT
-			var fsize = wordData[corp][w] * 50; 
+			var fsize = (1-(1-wordData[corp][w])*(1-wordData[corp][w])) * 25; 
 			//console.log(w + " " + fsize + "x: " + x);
 			y = y + ydelta;
-			svgelement.append(createForeignObject(w,x,y,fsize));
+			jObj = createForeignObject(w,x,y,fsize);
+			jObj.setAttribute("onclick", "displaySelectedSection('" + w +"','" + corp +"')");
+			svgelement.append(jObj);
 
 			//Now See if we already got that element last column
 			if (savedCoordinates.hasOwnProperty(w)){
@@ -136,6 +156,7 @@ function createSVGContent(svgelement, wordData){
 				l.setAttribute("y2",y + paddingCorrection);
 				l.setAttribute("stroke-opacity","0.5");
 				l.setAttribute('stroke-width',"2");
+				l.setAttribute('z-index',"-5");
 				l.setAttribute('stroke',"#" + intToRGB(hashCode(w)));
 				svgelement.append(l);
 

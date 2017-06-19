@@ -8,7 +8,7 @@ xhr.onload = function(e) {
   console.log(this.response);
   var uInt8Array = new Uint8Array(this.response);   
   var db = new SQL.Database(uInt8Array);
-  contents = db.exec("SELECT * FROM letters LIMIT 10"); // show the contents of table letters
+  contents = db.exec("SELECT * FROM letters LIMIT 100"); // show the contents of table letters
   // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
 
   //console.log(contents[0].values.length);

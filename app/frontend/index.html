@@ -30,8 +30,13 @@
 	<form id="CorpusSelectionForm" onsubmit="CorpusSelectionSubmit()">
 	<p>Number Of Splits: <input type=number  onload="addDateInput(this.value)" onchange="addDateInput(this.value)" value=1></input></p>
 	<p id="DateSelection">
-		Corpus 1 start: <input name="Corpus1-start" type="date" min="1794-06-13" max="1805-12-31" value="1794-06-13"></input>
-		end: <input name= "Corpus1-end" type="date"  min="1794-06-13" max="1805-12-31"  value="1794-12-31"></input><br>
+		Corpus 1 start: <input name="Corpus1-start" type="date" min="1794-06-13" max="1805-12-31" value="1794-08-01"></input>
+		end: <input name= "Corpus1-end" type="date"  min="1794-06-13" max="1805-12-31"  value="1794-10-01"></input><br>
+	
+		Corpus 2 start: <input name="Corpus2-start" type="date" min="1794-06-13" max="1805-12-31" value="1794-10-01"></input>
+		end: <input name= "Corpus2-end" type="date"  min="1794-06-13" max="1805-12-31"  value="1794-12-01"></input><br>
+		Corpus 3 start: <input name="Corpus3-start" type="date" min="1794-06-13" max="1805-12-31" value="1794-12-01"></input>
+		end: <input name= "Corpus3-end" type="date"  min="1794-06-13" max="1805-12-31"  value="1795-03-01"></input><br>
 	</p>
 	<input type="submit"></input></button></form>
 	
@@ -58,7 +63,7 @@
 						<li><a onClick="openModal()" class="first">Select Corpus</a><li>
 						<li><a onClick="createWordCloud()" class="first">TagCloud</a><li>
 						<li><a onClick="CreateParallelWordClouds()" class="first">pTagClouds</a><li>
-						<li><a onClick="createRIndexCluster();" class="first">RIndexCluster</a><li>
+						<!--li><a onClick="createRIndexCluster();" class="first">RIndexCluster</a><li-->
 						
 				</ul>
 			</nav>
