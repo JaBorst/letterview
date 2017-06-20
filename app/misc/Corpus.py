@@ -5,7 +5,8 @@ from collections import Counter
 
 import string
 import sqlite3
-
+import treetaggerwrapper
+tagger = treetaggerwrapper.TreeTagger(TAGLANG='de')
 
 def tokenizeCorpus(corpus=[]):
 	translate_table = dict((ord(char), None) for char in string.punctuation)
@@ -20,17 +21,17 @@ def tokenizeCorpus(corpus=[]):
 def main():
 	conn = sqlite3.connect('example.db')
 	c = conn.cursor()
-	c.execute("SELECT content from letters;")
+	c.execute("SELECT id, content from letters;")
 
 	termfreq = []
 	dokfreq = Counter()
-	for letter in c:
+	for (id, letter) in c:
 		tok = tokenizeCorpus(letter)
 		termfreq+=tok
 
 		dokfreq += Counter(list(set(tok)))
 
-	c.execute("CREATE TABLE IF NOT EXISTS termfreq ( word TEXT, freq INT)")
+	c.execute("CREATE TABLE IF NOT EXISTS termfreq (docID INT, word TEXT, freq INT, pos_tag TEXT)")
 	c.execute("CREATE TABLE IF NOT EXISTS dokfreq ( word TEXT, freq INT)")
 
 	print(Counter(termfreq).most_common(20))
@@ -40,7 +41,7 @@ def main():
 	dokfreqCounter = dokfreq
 
 	for w in termfreqCounter:
-		c.execute("INSERT INTO termfreq VALUES ( ? , ? )", (w, str(termfreqCounter[w])))
+		c.execute("INSERT INTO termfreq VALUES ( ? , ? , ? , ? )", (id, w, str(termfreqCounter[w], tag)))
 
 	conn.commit()
 	for w in dokfreqCounter:

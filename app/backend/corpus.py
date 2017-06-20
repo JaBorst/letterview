@@ -4,6 +4,7 @@ from nltk import word_tokenize, FreqDist
 from nltk.corpus import stopwords
 import string
 import operator
+import math
 
 import numpy as np
 
@@ -100,6 +101,24 @@ class Corpus:
 	def getTfIDf(self, word=""):
 		return self.tf.get(word, 0) * self.idf.get(word, 1)
 
+	def getG2(self, word="", b = 0., d = 0.):
+		a = self.tf.get(word,0.0001)
+		c = sum(list(self.tf.values()))
+
+		e1 = c * (a + b)/(c + d)
+		e2 = d * (a + b) / (c + d)
+		# print("a: ", a)
+		# print("b: ", b)
+		# print("c: ", c)
+		# print("d: ", d)
+		# print("e1: ", e1)
+		# print("e2: ", e2)
+
+		if a != 0 and b !=0:
+			return 2 * (a * math.log(a/e1 , math.e) + b * math.log(b/e2,math.e ))
+		else:
+			return 0
+
 
 	def getHighestRanked(self, n=10):
 		tfidf = [(word, self.getTfIDf(word)) for word in self.tf.keys()]
@@ -134,6 +153,25 @@ class CorpusSplits:
 				c.getInfo()
 				print("")
 
+	def getG2(self, word = ""):
+		g2list = []
+		for i in range(0,len(self.corpusList)):
+			#print("Corpus %i" % i)
+			remainder = [elt for num, elt in enumerate(self.corpusList) if not num == i]
+			b = sum([c.tf.get(word, 0) for c in remainder])
+			d = sum([sum(c.tf.values()) for c in remainder])
+			g2list.append(self.corpusList[i].getG2(word, b=b, d=d))
+
+		return g2list
+
+	def getG2_single(self, i, word = ""):
+		remainder = [elt for num, elt in enumerate(self.corpusList) if not num == i]
+		b = sum([c.tf.get(word, 0) for c in remainder])
+		d = sum([sum(c.tf.values()) for c in remainder])
+		return self.corpusList[i].getG2(word, b=b, d=d)
+
+
+
 	def gettfidf(self, word=""):
 		return [c.getTfIDf(word) for c in self.corpusList]
 
@@ -142,6 +180,24 @@ class CorpusSplits:
 
 	def getPWordCloudJS(self, n=20):
 		return {c.name: c.getPWordCloudJS(n) for c in self.corpusList}
+
+
+
+
+
+	def getPWordCloudJSG2(self, n=20):
+		return {self.corpusList[c].name: self.getPWordCloudG2_single(c,n) for c in range(0,len(self.corpusList))}
+
+
+	def getPWordCloudG2_single(self, corpus = None,n=10):
+		highest = self.getHighestRankedG2(corpus,n)
+		max = highest[0][1]
+		#print("highest", highest)
+		return {w: float(f) / float(max) for (w, f) in highest}
+
+	def getHighestRankedG2(self, corpus = 0 , n=10):
+		g2 = [(word, self.getG2_single( corpus, word)) for word in self.corpusList[corpus].tf.keys()]
+		return sorted(g2, key=operator.itemgetter(1),reverse=True)[:n]
 
 	def clear(self):
 		self.dates = {}
@@ -154,9 +210,13 @@ def main():
 	c.initByDate(testData)
 
 	c.getInfo()
-	word="zeitschrift"
+	word="faust"
 	print(word, c.gettfidf(word))
-	print(c.getPWordCloudJS(20))
+	#print(c.getPWordCloudJS(20))
+	print(word, c.getG2(word))
+
+	print(c.getPWordCloudJSG2(10))
+	#print(c.getPWordCloudJS(10))
 
 if __name__ == "__main__":
 	main()

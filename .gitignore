@@ -89,3 +89,5 @@ ENV/
 .ropeproject
 
 app/backend/\.idea/
+
+app/\.idea/
