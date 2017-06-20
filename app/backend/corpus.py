@@ -17,17 +17,17 @@ def getStatsCorpus(ids=[]):
 	conn = sqlite3.connect("lingstats.db")
 	c =  conn.cursor()
 
-	sqlTermFreq = "select word, total(freq) from termfreq where docID>=%i and docID <=%i group by word " % (ids[0], ids[-1])
+	sqlTermFreq = "select word, total(freq) from termfreq where docID>=%i and docID <=%i and pos_tag='n' group by word " % (ids[0], ids[-1])
 	c.execute(sqlTermFreq)
 	termfreq = {w: f for (w, f) in c}
 
 
-	sqlDocInSplit = "select word, COUNT(word) from termfreq where docID>=%i and docID<=%i group by word " % (ids[0], ids[-1])
+	sqlDocInSplit = "select word, COUNT(word) from termfreq where docID>=%i and docID<=%i and pos_tag='n' group by word " % (ids[0], ids[-1])
 	c.execute(sqlDocInSplit)
 	docFreqSplit = {w: d for (w, d) in c}
 
-	sqlDocOutSplit = "SELECT word, COUNT(word) FROM termfreq WHERE (docID<%i or docID>%i) and " \
-					 "word in (SELECT DISTINCT word from termfreq where docID>=%i and docID<=%i)  " \
+	sqlDocOutSplit = "SELECT word, COUNT(word) FROM termfreq WHERE (docID<%i or docID>%i) and pos_tag='n' and " \
+					 "word in (SELECT DISTINCT word from termfreq where docID>=%i and docID<=%i and pos_tag='n')  " \
 					 "GROUP BY word " % (ids[0], ids[-1], ids[0], ids[-1])
 	c.execute(sqlDocOutSplit)
 	for (w, d) in c:
@@ -202,6 +202,10 @@ class CorpusSplits:
 	def clear(self):
 		self.dates = {}
 		self.corpusList = []
+
+
+	def getWordLine(self, word = "", step = 5):
+		for i in mylist[::2]:
 
 
 def main():
