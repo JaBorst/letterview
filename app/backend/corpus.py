@@ -9,9 +9,9 @@ import time
 
 from numpy import cumprod, linspace, random
 
-#from bokeh.plotting import figure, show, output_file
-#from bokeh.models import DatetimeTickFormatter
-#from bokeh.palettes import *
+from bokeh.plotting import figure, show, output_file
+from bokeh.models import DatetimeTickFormatter
+from bokeh.palettes import *
 from math import pi
 from datetime import datetime as dt
 
