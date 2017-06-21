@@ -86,7 +86,16 @@ def tagclouds():
 
 
 
+@app.route("/idsbycorpus", methods=['GET', 'POST'])
+def idsbycorpus():
+	print("tagclouds")
+	print(request.json)
+	ids = c.getIDsByName(name=request.json["corpusname"], word=request.json["word"])
+	c.getInfo()
+	print(ids)
 
+
+	return jsonify(ids)
 
 
 

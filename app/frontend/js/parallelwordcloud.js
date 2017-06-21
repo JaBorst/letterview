@@ -54,9 +54,18 @@ function hashCode(str) { // java String#hashCode
 function displaySelectedSection(w, corpusName){
 	console.log("Clicked On " + w);
 	console.log("in Corpus: " + result[corpusName]["start"]);
+
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', 'http://0.0.0.0:5000/idsbycorpus', true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onload = function(e) {
+		var objResponse = JSON.parse(this.response);
+		console.log(objResponse);
 	
-	//ToDO
-	//displayLetterContent(w, [1,2,3,4]);
+		//ToDO
+		//displayLetterContent(w, [1,2,3,4]);
+	}
+	xhr.send(JSON.stringify({"corpusname" : corpusName, "word" : w }));	
 	
 }
 

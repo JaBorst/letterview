@@ -19,8 +19,8 @@ from datetime import datetime as dt
 import numpy as np
 
 testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
-			, "2" : {"start": "1796-6-10" , "end": "1797-2-28"}
-			, "3" : {"start": "1796-6-10" , "end": "1798-5-25"}
+		#	, "corpus2" : {"start": "1796-6-10" , "end": "1797-2-28"}
+		#	, "corpus3" : {"start": "1796-6-10" , "end": "1798-5-25"}
 		}
 
 def getStatsCorpus(ids=[]):
@@ -171,6 +171,11 @@ class CorpusSplits:
 		c.execute(sqlTermFreq)
 		self.dateMap = { id :{ "year": year, "month":month, "day":day } for (id, year, month, day) in c }
 
+	def getIDsByName(self, word="", name=""):
+		for c in self.corpusList:
+			if c.name == name:
+				return [ i  for i in c.id if self.tf.get(i, {}).get(word,0) != 0 ]
+		return []
 
 	def initByDate(self, datejs = {}):
 		self.clear()
@@ -284,27 +289,28 @@ class CorpusSplits:
 		return plotDataDates, plotDataIDs, plotDataMeasure
 
 
-	# def plot(self,word = [], step = 100):
-	# 	output_file("correlation.html", title="correlation.py example")
-	# 	TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
-	# 	plot = figure(x_axis_type="datetime", tools=TOOLS)
-	# 
-	# 	for (w,c) in zip(word, Category20[20]):
-	# 		date, id, y = self.getWordLine(w, step = step)
-	# 		plot.line(date, y, color=c, legend=w)
-	# 
-	# 
-	# 
-	# 
-	# 
-	# 	plot.xaxis.formatter = DatetimeTickFormatter(
-	# 		hours=["%d %B %Y"],
-	# 		days=["%d %B %Y"],
-	# 		months=["%d %B %Y"],
-	# 		years=["%d %B %Y"],
-	# 	)
-	# 	plot.xaxis.major_label_orientation = pi / 4
-	# 	show(plot)
+	def plot(self,word = [], step = 100):
+		output_file("correlation.html", title="correlation.py example")
+		TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
+		plot = figure(x_axis_type="datetime", tools=TOOLS)
+
+		for (w,c) in zip(word, Category20[20]):
+			date, id, y = self.getWordLine(w, step = step)
+			plot.line(date, y, color=c, legend=w, muted_color=c, muted_alpha=0.2,)
+
+
+
+
+
+		plot.xaxis.formatter = DatetimeTickFormatter(
+			hours=["%d %B %Y"],
+			days=["%d %B %Y"],
+			months=["%d %B %Y"],
+			years=["%d %B %Y"],
+		)
+		plot.xaxis.major_label_orientation = pi / 4
+		plot.legend.click_policy = "mute"
+		show(plot)
 
 
 def main():
@@ -313,7 +319,7 @@ def main():
 	#c.initByDate(testData)
 
 	#c.getInfo()
-	word="Faust"
+	#word="Faust"
 	#print(word, c.gettfidf(word))
 	#print(c.getPWordCloudJS(20))
 	#print(word, c.getG2(word))
@@ -321,8 +327,10 @@ def main():
 	#print(c.getPWordCloudJSG2(10))
 	#print(c.getPWordCloudJS(10))
 
-
+	#print (c.getIDsByName(word="Majestät",  name="corpus1"))
 	#print(c.getWordLine(word=word, step=4))
+
+	c.plot(word=["Faust", "Horen", "Brief", "Briefen", "Briefe"], step=1)
 
 
 if __name__ == "__main__":
