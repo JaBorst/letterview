@@ -55,6 +55,9 @@ function displaySelectedSection(w, corpusName){
 	console.log("Clicked On " + w);
 	console.log("in Corpus: " + result[corpusName]["start"]);
 	
+	//ToDO
+	//displayLetterContent(w, [1,2,3,4]);
+	
 }
 
 function intToRGB(i){

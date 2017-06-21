@@ -9,9 +9,9 @@ import time
 
 from numpy import cumprod, linspace, random
 
-from bokeh.plotting import figure, show, output_file
-from bokeh.models import DatetimeTickFormatter
-from bokeh.palettes import *
+#from bokeh.plotting import figure, show, output_file
+#from bokeh.models import DatetimeTickFormatter
+#from bokeh.palettes import *
 from math import pi
 from datetime import datetime as dt
 
@@ -219,10 +219,6 @@ class CorpusSplits:
 	def getPWordCloudJS(self, n=20):
 		return {c.name: c.getPWordCloudJS(n) for c in self.corpusList}
 
-
-
-
-
 	def getPWordCloudJSG2(self, n=20):
 		return {self.corpusList[c].name: self.getPWordCloudG2_single(c,n) for c in range(0,len(self.corpusList))}
 
@@ -288,27 +284,27 @@ class CorpusSplits:
 		return plotDataDates, plotDataIDs, plotDataMeasure
 
 
-	def plot(self,word = [], step = 100):
-		output_file("correlation.html", title="correlation.py example")
-		TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
-		plot = figure(x_axis_type="datetime", tools=TOOLS)
-
-		for (w,c) in zip(word, Category20[20]):
-			date, id, y = self.getWordLine(w, step = step)
-			plot.line(date, y, color=c, legend=w)
-
-
-
-
-
-		plot.xaxis.formatter = DatetimeTickFormatter(
-			hours=["%d %B %Y"],
-			days=["%d %B %Y"],
-			months=["%d %B %Y"],
-			years=["%d %B %Y"],
-		)
-		plot.xaxis.major_label_orientation = pi / 4
-		show(plot)
+	# def plot(self,word = [], step = 100):
+	# 	output_file("correlation.html", title="correlation.py example")
+	# 	TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
+	# 	plot = figure(x_axis_type="datetime", tools=TOOLS)
+	# 
+	# 	for (w,c) in zip(word, Category20[20]):
+	# 		date, id, y = self.getWordLine(w, step = step)
+	# 		plot.line(date, y, color=c, legend=w)
+	# 
+	# 
+	# 
+	# 
+	# 
+	# 	plot.xaxis.formatter = DatetimeTickFormatter(
+	# 		hours=["%d %B %Y"],
+	# 		days=["%d %B %Y"],
+	# 		months=["%d %B %Y"],
+	# 		years=["%d %B %Y"],
+	# 	)
+	# 	plot.xaxis.major_label_orientation = pi / 4
+	# 	show(plot)
 
 
 def main():
@@ -327,7 +323,6 @@ def main():
 
 
 	#print(c.getWordLine(word=word, step=4))
-	c.plot(["Faust", "Räuber", "Manuscript", "Horen"], step = 10)
 
 
 if __name__ == "__main__":
