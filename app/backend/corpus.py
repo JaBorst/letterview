@@ -5,6 +5,16 @@ from nltk.corpus import stopwords
 import string
 import operator
 import math
+import time
+
+from numpy import cumprod, linspace, random
+
+from bokeh.plotting import figure, show, output_file
+from bokeh.models import DatetimeTickFormatter
+from bokeh.palettes import *
+from math import pi
+from datetime import datetime as dt
+
 
 import numpy as np
 
@@ -33,7 +43,7 @@ def getStatsCorpus(ids=[]):
 	for (w, d) in c:
 		docFreqSplit[w] /= d
 
-	return termfreq, docFreqSplit
+		return termfreq, docFreqSplit
 
 
 def tokenizeCorpus(corpus=[]):
@@ -104,9 +114,9 @@ class Corpus:
 	def getG2(self, word="", b = 0., d = 0.):
 		a = self.tf.get(word,0.0001)
 		c = sum(list(self.tf.values()))
-
-		e1 = c * (a + b)/(c + d)
+		e1 = c * (a + b) / (c + d)
 		e2 = d * (a + b) / (c + d)
+
 		# print("a: ", a)
 		# print("b: ", b)
 		# print("c: ", c)
@@ -139,6 +149,28 @@ class Corpus:
 class CorpusSplits:
 	dates = {}
 	corpusList = []
+	tf = {}
+	dateMap = {}
+
+	def __init__(self):
+		conn = sqlite3.connect("lingstats.db")
+		c = conn.cursor()
+
+		sqlTermFreq = "select docID, word, freq from termfreq WHERE pos_tag='n'"
+		c.execute(sqlTermFreq)
+		for (id, word, freq) in c:
+			#print(id)
+			if id not in self.tf.keys():
+				self.tf[id] = {}
+			self.tf[id][word] = freq
+		conn.close()
+
+		conn = sqlite3.connect("example.db")
+		c = conn.cursor()
+		sqlTermFreq = "select id, year, month, day from letters"
+		c.execute(sqlTermFreq)
+		self.dateMap = { id :{ "year": year, "month":month, "day":day } for (id, year, month, day) in c }
+
 
 	def initByDate(self, datejs = {}):
 		self.clear()
@@ -168,8 +200,14 @@ class CorpusSplits:
 		remainder = [elt for num, elt in enumerate(self.corpusList) if not num == i]
 		b = sum([c.tf.get(word, 0) for c in remainder])
 		d = sum([sum(c.tf.values()) for c in remainder])
-		return self.corpusList[i].getG2(word, b=b, d=d)
-
+		a = self.corpusList[i].tf.get(word, 0.0001)
+		c = sum(list(self.corpusList[i].tf.values()))
+		e1 = c * (a + b) / (c + d)
+		e2 = d * (a + b) / (c + d)
+		if a != 0 and b !=0:
+			return 2 * (a * math.log(a/e1 , math.e) + b * math.log(b/e2,math.e ))
+		else:
+			return 0
 
 
 	def gettfidf(self, word=""):
@@ -203,24 +241,94 @@ class CorpusSplits:
 		self.dates = {}
 		self.corpusList = []
 
+	def getWordLine(self, word ="", step=5, ):
 
-	def getWordLine(self, word = "", step = 5):
-		for i in mylist[::2]:
+		plotDataDates = []
+		plotDataIDs = []
+		plotDataMeasure =[]
+
+		for batchStart in list(self.dateMap.keys())[::step]:
+			if batchStart+step > list(self.dateMap.keys())[-1]:
+				break
+			else:
+
+				batch = range(batchStart, batchStart+step)
+
+				#remainder = [elt for num, elt in enumerate(self.corpusList) if not num in batch]
+
+
+				a = sum( [ self.tf.get(i,{}).get(word,0) for i in batch ] ) + 0.0001
+				b = sum( [ self.tf.get(i,{}).get(word,0) for i in list(self.dateMap.keys()) if i not in batch ] ) + 0.0001
+
+				c = sum( [ sum(self.tf.get(i,{}).values()) for i in batch])
+				d = sum( [ sum(self.tf.get(i,{}).values()) for i in list(self.dateMap.keys()) if i not in batch ])
+
+				e1 = c * (a + b) / (c + d)
+				e2 = d * (a + b) / (c + d)
+				g2 = 2 * (a * math.log(a / e1, math.e) + b * math.log(b / e2, math.e))
+
+				try:
+
+					years =  [ self.dateMap.get(i,{}).get("year",0) for i in batch if self.dateMap.get(i,{}).get("year",0) ]
+					months = [ self.dateMap.get(i,{}).get("month",0) for i in batch if self.dateMap.get(i,{}).get("month",0)]
+					days   = [ self.dateMap.get(i,{}).get("day",0) for i in batch if self.dateMap.get(i,{}).get("day",0) ]
+
+					if len(years) == 0 or len ( months) == 0 or len(days) == 0:
+						pass
+					else:
+						plotDataDates.append(dt(day=days[0], year=years[0], month=months[0]))
+						plotDataIDs.append(batchStart)
+						plotDataMeasure.append(g2)
+
+				except (ValueError, ):
+					pass
+
+
+
+		return plotDataDates, plotDataIDs, plotDataMeasure
+
+
+	def plot(self,word = [], step = 100):
+		output_file("correlation.html", title="correlation.py example")
+		TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
+		plot = figure(x_axis_type="datetime", tools=TOOLS)
+
+		for (w,c) in zip(word, Category20[20]):
+			date, id, y = self.getWordLine(w, step = step)
+			plot.line(date, y, color=c, legend=w)
+
+
+
+
+
+		plot.xaxis.formatter = DatetimeTickFormatter(
+			hours=["%d %B %Y"],
+			days=["%d %B %Y"],
+			months=["%d %B %Y"],
+			years=["%d %B %Y"],
+		)
+		plot.xaxis.major_label_orientation = pi / 4
+		show(plot)
 
 
 def main():
 
 	c = CorpusSplits()
-	c.initByDate(testData)
+	#c.initByDate(testData)
 
-	c.getInfo()
-	word="faust"
-	print(word, c.gettfidf(word))
+	#c.getInfo()
+	word="Faust"
+	#print(word, c.gettfidf(word))
 	#print(c.getPWordCloudJS(20))
-	print(word, c.getG2(word))
+	#print(word, c.getG2(word))
 
-	print(c.getPWordCloudJSG2(10))
+	#print(c.getPWordCloudJSG2(10))
 	#print(c.getPWordCloudJS(10))
+
+
+	#print(c.getWordLine(word=word, step=4))
+	c.plot(["Faust", "Räuber", "Manuscript", "Horen"], step = 10)
+
 
 if __name__ == "__main__":
 	main()

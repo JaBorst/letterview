@@ -6,7 +6,7 @@ from corpus import *
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-
+c = CorpusSplits()
 
 def get_file(filename):  # pragma: no cover
     try:
@@ -62,7 +62,7 @@ def db():
 def ptagclouds():
 	print("something")
 	print(request.json)
-	c = CorpusSplits()
+
 	c.initByDate(request.json)
 
 	c.getInfo()
@@ -75,7 +75,6 @@ def ptagclouds():
 def tagclouds():
 	print("tagclouds")
 	print(request.json)
-	c = CorpusSplits()
 	c.initByDate(request.json)
 
 	c.getInfo()
