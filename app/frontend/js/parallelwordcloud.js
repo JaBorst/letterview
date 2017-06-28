@@ -54,11 +54,6 @@ function hashCode(str) { // java String#hashCode
 function displaySelectedSection(w, corpusName){
 	console.log("Clicked On " + w);
 	console.log("in Corpus: " + result[corpusName]["start"]);
-<<<<<<< HEAD
-	
-	//ToDO
-	//displayLetterContent(w, [1,2,3,4]);
-=======
 
 	var xhr = new XMLHttpRequest();
 	xhr.open('POST', 'http://0.0.0.0:5000/idsbycorpus', true);
@@ -68,12 +63,10 @@ function displaySelectedSection(w, corpusName){
 		console.log(objResponse);
 		var keywordResult = { 'word': 'keyword', 'letterIdList':objResponse };
 		localStorage.setItem('keywordResult', JSON.stringify(keywordResult));
-		document.location = "letterViewKeyword.html"
+		document.location = "letterViewKeyword.html";
 		
 	}
 	xhr.send(JSON.stringify({"corpusname" : corpusName, "word" : w }));	
->>>>>>> b974d09... Merge and Integration (with Errors)
-	
 }
 
 function intToRGB(i){
