@@ -32,6 +32,11 @@ def index():
     return Response(content, mimetype="text/html")
 
 
+@app.route('/', methods=['GET'])
+def letterViewKeyword():
+    content = get_file('letterViewKeyword.html')
+    return Response(content, mimetype="text/html")
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def get_resource(path):  # pragma: no cover
@@ -85,7 +90,16 @@ def tagclouds():
 	return jsonify(wc)
 
 
-
+@app.route("/idsbycorpus", methods=['GET', 'POST']) 
+def idsbycorpus(): 
+  print("tagclouds") 
+  print(request.json) 
+  ids = c.getIDsByName(name=request.json["corpusname"], word=request.json["word"]) 
+  c.getInfo() 
+  print(ids) 
+ 
+ 
+  return jsonify(ids) 
 
 
 

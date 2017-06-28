@@ -1,0 +1,8 @@
+/*!
+ *  Fonts.css -- Cross-platform Chinese fonts solution
+ *
+ *  Copyright (C) 2013-2015 Zeno Zeng
+ *  Released under the MIT license
+ *
+ *  Github: https://github.com/zenozeng/fonts.css
+ */#app{font-size:1rem;text-align:center}#app .nav,#app .nav1{height:2rem;margin-top:2rem;background-color:#fff;padding-bottom:1rem;border-bottom:1px solid grey}#app .nav1 ul,#app .nav ul{list-style:none;padding:0;margin:0;display:flex;justify-content:center;align-items:center;font-size:1.2rem}#app .nav1 ul li,#app .nav ul li{margin:0 1.5rem}#app .nav1 ul li a:link,#app .nav ul li a:link{text-decoration:none;color:#000}#app .nav1 select,#app .nav select{height:1.5rem;width:6rem}#app .letterContent{font-size:1.3rem;height:calc(100vh - 7rem);width:100%;padding-top:2rem;background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),url(img/gs.jpg);background-repeat:no-repeat;background-position:50%;background-size:cover;overflow:scroll}body{font-family:Quattrocento Sans,sans-serif;color:#d9d9d9;margin:0}body span{color:gray;font-weight:500;background-color:#9cf}

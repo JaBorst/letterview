@@ -54,10 +54,19 @@ function hashCode(str) { // java String#hashCode
 function displaySelectedSection(w, corpusName){
 	console.log("Clicked On " + w);
 	console.log("in Corpus: " + result[corpusName]["start"]);
-	
-	//ToDO
-	//displayLetterContent(w, [1,2,3,4]);
-	
+
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', 'http://0.0.0.0:5000/idsbycorpus', true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onload = function(e) {
+		var objResponse = JSON.parse(this.response);
+		console.log(objResponse);
+		var keywordResult = { 'word': 'keyword', 'letterIdList':objResponse };
+		localStorage.setItem('keywordResult', JSON.stringify(keywordResult));
+		document.location = "letterViewKeyword.html";
+		
+	}
+	xhr.send(JSON.stringify({"corpusname" : corpusName, "word" : w }));	
 }
 
 function intToRGB(i){
