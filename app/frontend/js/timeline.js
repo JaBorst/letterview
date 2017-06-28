@@ -3,6 +3,7 @@ console.log('Creating Timeline')
 var xhr = new XMLHttpRequest()
 xhr.open('GET', 'http://0.0.0.0:5000/db', true)
 xhr.responseType = 'arraybuffer'
+var currentIds = []
 
 xhr.onload = function (e) {
   console.log(this.response)
@@ -46,7 +47,6 @@ xhr.onload = function (e) {
   }
   /* return the ids of current visible letters, result stores in currentIds  */
   var container = $('.ScrollableContent')
-  var currentIds = []
   var pos = $('.timelineItem').map(function () {
     var $this = $(this)
     return {el: $this, top: $this.offset().top}
@@ -62,6 +62,7 @@ xhr.onload = function (e) {
         currentIds.push(pos[i].el[0].id)
       }
     }
+    console.log(currentIds)
   }).scroll()
   /* return the ids of current visible letters  */
 }
