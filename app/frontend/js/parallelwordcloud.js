@@ -61,13 +61,12 @@ function displaySelectedSection(w, corpusName){
 	xhr.onload = function(e) {
 		var objResponse = JSON.parse(this.response);
 		console.log(objResponse);
-		var keywordResult = { 'word': 'keyword', 'letterIdList':objResponse };
+		var keywordResult = { 'word': w, 'letterIdList':objResponse };
 		localStorage.setItem('keywordResult', JSON.stringify(keywordResult));
-		document.location = "letterViewKeyword.html"
+		document.location = "letterViewKeyword.html";
 		
 	}
 	xhr.send(JSON.stringify({"corpusname" : corpusName, "word" : w }));	
-	
 }
 
 function intToRGB(i){
