@@ -53,8 +53,8 @@ body {
 
 .direction-l {
   position: relative;
-  width: 30%;
-  margin-left: calc(20% - 30px);
+  width: 40%;
+  margin-left: calc(10% - 30px);
   text-align: right;
 }
 /*@media (max-width: 860px) {
@@ -106,7 +106,7 @@ body {
 
 .direction-r {
   position: relative;
-  width:30%;
+  width:40%;
   margin-left: calc(50% + 30px);
 }
 /*@media (max-width: 860px) {
