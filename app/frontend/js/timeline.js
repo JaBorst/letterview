@@ -45,25 +45,8 @@ xhr.onload = function (e) {
     letterContent = contents[0].values[i][5].slice(0, 100)
     $('#mainTimeLine').append('<li class="timelineItem" id=' + contents[0].values[i][0] + " style='padding-bottom:" + correspondingPaddingBottom + "'><div class='" + direction + "'><div class='flag-wrapper'><span class='flag'>" + author + "</span><span class='time-wrapper'><span class='time'>" + dateTime + "</span></span></div><div class='desc'>" + letterContent + '...' + "<a onclick=openLetter('" + linkUrl + "') >Mehr dazu</a></div></div></li>")
   }
-  /* return the ids of current visible letters, result stores in currentIds  */
-  var container = $('.ScrollableContent')
-  var pos = $('.timelineItem').map(function () {
-    var $this = $(this)
-    return {el: $this, top: $this.offset().top}
-  }).get()
 
-  container.on('scroll', function () {
-    currentIds = []
-    var scrollTop = $(this).scrollTop()
-    var scrollBottom = scrollTop + $(this).height()
-    posLength = Object.keys(pos).length
-    for (var i = 0; i < posLength; i++) {
-      if (pos[i].top >= scrollTop && pos[i].top < scrollBottom) {
-        currentIds.push(pos[i].el[0].id)
-      }
-    }
-    console.log(currentIds)
-  }).scroll()
   /* return the ids of current visible letters  */
 }
 xhr.send()
+

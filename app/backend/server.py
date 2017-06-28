@@ -68,10 +68,10 @@ def ptagclouds():
 	print("something")
 	print(request.json)
 
-	c.initByDate(request.json)
+	c.initByDate(request.json["dates"])
 
 	c.getInfo()
-	wc = c.getPWordCloudJS(10)
+	wc = c.getPWordCloudJS(request.json["number"])
 	print(wc)
 	return jsonify(wc)
 
@@ -89,6 +89,20 @@ def tagclouds():
 
 	return jsonify(wc)
 
+@app.route("/dptagcloudapi", methods=['GET', 'POST'])
+def dptagclouds():
+	print("DP TAG CLOUDS")
+	print(request.json)
+	listOfInt = [ int(x) for x in request.json["ids"]]
+	listOfInt.sort()
+	listOfLists = [[int(x)] for x in  listOfInt]
+	c.initByID(listOfLists)
+
+	#c.getInfo()
+	wc = c.getPWordCloudJS(request.json["number"])
+	print(wc)
+	return jsonify(wc)
+
 
 @app.route("/idsbycorpus", methods=['GET', 'POST']) 
 def idsbycorpus(): 
@@ -99,7 +113,16 @@ def idsbycorpus():
   print(ids) 
  
  
-  return jsonify(ids) 
+  return jsonify(ids)
+
+
+@app.route("/wordlines", methods=['GET', 'POST'])
+def wordlines():
+	print("wordlines")
+	print(request.json)
+	diagram = get_file(c.plot( word=request.json["wordlist"].split(','), step=10))
+	return Response(diagram, mimetype="text/html")
+
 
 
 

@@ -9,8 +9,16 @@
 	<link rel="stylesheet" href="stylesheets/timeline.css">
 	<link rel="stylesheet" href="stylesheets/wordcloud.css">
 	<link rel="stylesheet" href="stylesheets/nav.css">
-	
 	<!--RemoteResources-->
+	<link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.6.min.css"
+    rel="stylesheet" type="text/css">
+	<link
+    href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.6.min.css"
+    rel="stylesheet" type="text/css">
+
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.6.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.6.min.js"></script>
 	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic' rel='stylesheet' type='text/css'>
     
 	
@@ -63,6 +71,7 @@
 						<li><a onClick="openModal()" class="first">Select Corpus</a><li>
 						<li><a onClick="createWordCloud()" class="first">TagCloud</a><li>
 						<li><a onClick="CreateParallelWordClouds()" class="first">pTagClouds</a><li>
+						<li><a onClick="dynamicParallelWordClouds()" class="first">dpTagClouds</a><li>
 						<!--li><a onClick="createRIndexCluster();" class="first">RIndexCluster</a><li-->
 						
 				</ul>
@@ -88,7 +97,7 @@
 				<div class="ScrollableDiv">
 					<div class="ScrollableContent">
 						<!-- Scrollable Content here-->
-						<div id="app" ></div>
+						<div id="app" > <img height=80% src="static/gs.jpg"></img></div>
 					</div>
 				</div>
 			</div>

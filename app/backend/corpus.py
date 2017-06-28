@@ -9,13 +9,18 @@ import time
 
 from numpy import cumprod, linspace, random
 
-#from bokeh.plotting import figure, show, output_file
-#from bokeh.models import DatetimeTickFormatter
-#from bokeh.palettes import *
+from bokeh.plotting import figure, show, output_file,save
+from bokeh.models import DatetimeTickFormatter
+from bokeh.embed import file_html,components
+
+from bokeh.resources import CDN
+
+from bokeh.palettes import *
 from math import pi
 from datetime import datetime as dt
 
-
+termfreqtable = "termfreq"
+lingstatDB = "lingstatsStem.db"
 import numpy as np
 
 testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
@@ -24,21 +29,21 @@ testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
 		}
 
 def getStatsCorpus(ids=[]):
-	conn = sqlite3.connect("lingstats.db")
+	conn = sqlite3.connect(lingstatDB)
 	c =  conn.cursor()
 
-	sqlTermFreq = "select word, total(freq) from termfreq where docID>=%i and docID <=%i and pos_tag='n' group by word " % (ids[0], ids[-1])
+	sqlTermFreq = "select word, total(freq) from %s where docID>=%i and docID <=%i and pos_tag='n' group by word " % (termfreqtable,			 ids[0], ids[-1])
 	c.execute(sqlTermFreq)
 	termfreq = {w: f for (w, f) in c}
 
 
-	sqlDocInSplit = "select word, COUNT(word) from termfreq where docID>=%i and docID<=%i and pos_tag='n' group by word " % (ids[0], ids[-1])
+	sqlDocInSplit = "select word, COUNT(word) from %s where docID>=%i and docID<=%i and pos_tag='n' group by word " % (termfreqtable, ids[0], ids[-1])
 	c.execute(sqlDocInSplit)
 	docFreqSplit = {w: d for (w, d) in c}
 
-	sqlDocOutSplit = "SELECT word, COUNT(word) FROM termfreq WHERE (docID<%i or docID>%i) and pos_tag='n' and " \
-					 "word in (SELECT DISTINCT word from termfreq where docID>=%i and docID<=%i and pos_tag='n')  " \
-					 "GROUP BY word " % (ids[0], ids[-1], ids[0], ids[-1])
+	sqlDocOutSplit = "SELECT word, COUNT(word) FROM %s WHERE (docID<%i or docID>%i) and pos_tag='n' and " \
+					 "word in (SELECT DISTINCT word from %s where docID>=%i and docID<=%i and pos_tag='n')  " \
+					 "GROUP BY word " % (termfreqtable, ids[0], ids[-1], termfreqtable, ids[0], ids[-1])
 	c.execute(sqlDocOutSplit)
 	for (w, d) in c:
 		docFreqSplit[w] /= d
@@ -67,10 +72,11 @@ class Corpus:
 	idf = {}
 
 	def __init__(self, cstart="", cend="", cname=""):
-		self.getCorpus(cstart, cend)
-		self.dates = {}
-		self.dates["start"] = cstart
-		self.dates["end"] = cend
+		if cstart != "" and cend != "":
+			self.getCorpus(cstart, cend)
+			self.dates = {}
+			self.dates["start"] = cstart
+			self.dates["end"] = cend
 		self.name = cname
 
 	def getCorpus(self, start="", end=""):
@@ -100,11 +106,24 @@ class Corpus:
 		self.contentBag = [w for body in self.content for w in tokenizeCorpus(body)]
 		self.tf, self.idf = getStatsCorpus(ids=self.id)
 
+	def getCorpusId(self, ids=[]):
+		self.id = ids
+		self.id.sort()
+		startID = self.id[0]
+		endID = self.id[-1]
+		db = "example.db"
+		conn = sqlite3.connect(db)
+		c = conn.cursor()
+		sql = "SELECT id,content FROM letters where id>=%s and id <= %s ORDER BY id ASC;" % (startID, endID)
+		c.execute(sql)
+		self.content = [[row[1]] for row in c]
+		self.contentBag = [w for body in self.content for w in tokenizeCorpus(body)]
+		self.tf, self.idf = getStatsCorpus(ids=self.id)
 
 	def getInfo(self):
 		print("Information Corpus %s:" % self.name)
-		print("Starts at = ", self.dates["start"], " (id: ", self.id[0],")")
-		print("Ends at = ", self.dates["end"], " (id: ", self.id[-1],")")
+		#print("Starts at = ", self.dates["start"], " (id: ", self.id[0],")")
+		#print("Ends at = ", self.dates["end"], " (id: ", self.id[-1],")")
 		print("Size: ", len(self.content))
 		#print(self.tf)
 
@@ -153,10 +172,10 @@ class CorpusSplits:
 	dateMap = {}
 
 	def __init__(self):
-		conn = sqlite3.connect("lingstats.db")
+		conn = sqlite3.connect(lingstatDB)
 		c = conn.cursor()
 
-		sqlTermFreq = "select docID, word, freq from termfreq WHERE pos_tag='n'"
+		sqlTermFreq = "select docID, word, freq from %s WHERE pos_tag='n'" % (termfreqtable)
 		c.execute(sqlTermFreq)
 		for (id, word, freq) in c:
 			#print(id)
@@ -183,6 +202,16 @@ class CorpusSplits:
 			tmp = Corpus(cstart=datejs[c]["start"], cend=datejs[c]["end"], cname=c)
 			tmp.getInfo()
 			self.corpusList.append(tmp)
+
+	def initByID(self, idListOfList=[]):
+		self.clear()
+		for id in idListOfList:
+			tmp = Corpus(cname="Brief" + str(id))
+			tmp.getCorpusId(id)
+			#tmp.getInfo()
+			self.corpusList.append(tmp)
+
+
 
 	def getInfo(self):
 			print("This Split contains ",len(self.corpusList), "corpus")
@@ -289,45 +318,58 @@ class CorpusSplits:
 		return plotDataDates, plotDataIDs, plotDataMeasure
 
 
-	# def plot(self,word = [], step = 100):
-	# 	output_file("correlation.html", title="correlation.py example")
-	# 	TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
-	# 	plot = figure(x_axis_type="datetime", tools=TOOLS)
-	# 
-	# 	for (w,c) in zip(word, Category20[20]):
-	# 		date, id, y = self.getWordLine(w, step = step)
-	# 		plot.line(date, y, color=c, legend=w)
-	# 
-	# 
-	# 
-	# 
-	# 
-	# 	plot.xaxis.formatter = DatetimeTickFormatter(
-	# 		hours=["%d %B %Y"],
-	# 		days=["%d %B %Y"],
-	# 		months=["%d %B %Y"],
-	# 		years=["%d %B %Y"],
-	# 	)
-	# 	plot.xaxis.major_label_orientation = pi / 4
-	# 	show(plot)
+	def plot(self, filename="wordline.html" , word = [], step = 100):
+		output_file("../frontend/"+filename, title="correlation.py example")
+		TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
+		plot = figure(x_axis_type="datetime", tools=TOOLS)
 
+		for (w,c) in zip(word, Category20[20]):
+			date, id, y = self.getWordLine(w, step = step)
+			plot.line(date, y, color=c, legend=w, muted_color=c, muted_alpha=0.01,)
+
+
+
+
+
+		plot.xaxis.formatter = DatetimeTickFormatter(
+			hours=["%d %B %Y"],
+			days=["%d %B %Y"],
+			months=["%d %B %Y"],
+			years=["%d %B %Y"],
+		)
+		plot.xaxis.major_label_orientation = pi / 4
+		plot.legend.click_policy = "mute"
+
+		save(plot)
+		return filename
 
 def main():
 
+	#c = CorpusSplits()
+	#c.initByDate(testData)
+
+
 	c = CorpusSplits()
-	c.initByDate(testData)
+
+	idjs = {"corpus1": {"idList" : [1]},
+			"corpus2": {"idList" : [2]},
+			"corpus3": {"idList" : [3]} }
+
+	c.initByID(idjs)
 
 	#c.getInfo()
-	word="Faust"
+	#word="Faust"
 	#print(word, c.gettfidf(word))
 	#print(c.getPWordCloudJS(20))
 	#print(word, c.getG2(word))
 
-	#print(c.getPWordCloudJSG2(10))
+	print(c.getPWordCloudJSG2(10))
 	#print(c.getPWordCloudJS(10))
 
-	print(c.getIDsByName(word="Horen", name="corpus1"))
+	#print(c.getIDsByName(word="Horen", name="corpus1"))
 	#print(c.getWordLine(word=word, step=4))
+
+	#c.plot(filename="wordline.html", word=["Faust", "Horen", "Brief", "Briefen", "Briefe"], step=5)
 
 
 if __name__ == "__main__":
