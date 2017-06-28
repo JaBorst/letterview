@@ -105,7 +105,23 @@ function createForeignObject(cont,x ,y , size){
 	return fo;
 
 }
+function createForeignObjectTitle(cont,x ,y , size){
 
+	var fo = document.createElementNS('http://www.w3.org/2000/svg',"foreignObject");
+	fo.setAttribute("x",x);
+	fo.setAttribute("y",y);
+	fo.setAttribute('width', "100%");
+    fo.setAttribute('height',"100%");
+	var div = document.createElement("div");
+	//div.setAttribute("id", "ptagdiv");
+	div.style.backgroundColor =  "white";
+	div.style.fontSize = String(size)+"pt";
+	div.innerHTML= "<b><u>" + cont + "</u></b>";
+	fo.append(div);
+	console.log("foreignObject created" + intToRGB(hashCode(w)) +"  fade(#" + intToRGB(hashCode(cont)) + ", 80%)" );
+	return fo;
+
+}
 
 function createSVGContent(svgelement, wordData){
 	var x = 40;
@@ -140,6 +156,9 @@ function createSVGContent(svgelement, wordData){
 	savedCoordinatesActual = {};
 	for (corp in wordData){
 		var y = 20;
+		jObj = createForeignObjectTitle(corp, x, y, 20);
+		jObj.setAttribute("onclick", "corpusWordlines('" + corp + "', '" + Object.keys(wordData[corp]) + "')");
+		svgelement.append(jObj);
 		for (w in wordData[corp]){
 
 
@@ -240,12 +259,23 @@ function CreateParallelWordClouds(j){
 		//table.appendChild(row);
 		//node.appendChild(table);
 		//console.log(JSON.parse(this.response));
+		
 		var objResponse = JSON.parse(this.response);
+		//var f = document.createElement("form");
+		//var i = document.createElement("input");
+		//f.append(i);
+		//i.setAttribute("type","number");
+		//i.setAttribute("min","5");
+		//i.setAttribute("max","20");
+		//i.setAttribute("step","1");
+		//i.setAttribute("value","175");
+		//node.append(f);
+		
 		
 		//LOOP ADDING THE WORD COLUMNS
 		var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-		svg.setAttribute ("width","100%");
-		svg.setAttribute ("height","100%");
+		svg.setAttribute ("width","120%");
+		svg.setAttribute ("height","120%");
 		svg.setAttribute ("style", "border:2px solid #000000") ;
 		svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
 
@@ -281,8 +311,29 @@ function CreateParallelWordClouds(j){
 	}
 	
 	
-	xhr.send(JSON.stringify(result));	
+	xhr.send(JSON.stringify({dates:result, number:20}));	
 	console.log("Wordclouds Created");	
 }
 
+function corpusWordlines(corpusName, wordlist){
+	console.log("Corpus: " + corpusName);
+	console.log(wordlist);
+	console.log("WordLines");
+	var postWordlineData = {wordlist: wordlist, granularity: 100};
+	
+	
+	
+	var api = "http://0.0.0.0:5000/wordlines";
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', api, true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onload = function(e) {
+		console.log("wordline xhr-onload");
 
+		//Cleaning the Application node
+		
+		document.location = "wordline.html";
+	}
+	xhr.send(JSON.stringify(postWordlineData));	
+	console.log("Wordclouds Created");	
+}

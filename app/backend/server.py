@@ -68,10 +68,10 @@ def ptagclouds():
 	print("something")
 	print(request.json)
 
-	c.initByDate(request.json)
+	c.initByDate(request.json["dates"])
 
 	c.getInfo()
-	wc = c.getPWordCloudJS(10)
+	wc = c.getPWordCloudJS(request.json["number"])
 	print(wc)
 	return jsonify(wc)
 
@@ -99,18 +99,19 @@ def idsbycorpus():
   print(ids) 
  
  
-  return jsonify(ids) 
+  return jsonify(ids)
 
-@app.route("/idsbycorpus", methods=['GET', 'POST'])
-def idsbycorpus():
-	print("tagclouds")
+
+@app.route("/wordlines", methods=['GET', 'POST'])
+def wordlines():
+	print("wordlines")
 	print(request.json)
-	ids = c.getIDsByName(name=request.json["corpusname"], word=request.json["word"])
-	c.getInfo()
-	print(ids)
+	diagram = get_file(c.plot( word=request.json["wordlist"].split(','), step=10))
+	return Response(diagram, mimetype="text/html")
 
 
-	return jsonify(ids)
+
+
 
 if __name__ == '__main__':  # pragma: no cover
     app.run()

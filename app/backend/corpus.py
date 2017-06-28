@@ -9,13 +9,18 @@ import time
 
 from numpy import cumprod, linspace, random
 
-from bokeh.plotting import figure, show, output_file
+from bokeh.plotting import figure, show, output_file,save
 from bokeh.models import DatetimeTickFormatter
+from bokeh.embed import file_html,components
+
+from bokeh.resources import CDN
+
 from bokeh.palettes import *
 from math import pi
 from datetime import datetime as dt
 
-
+termfreqtable = "termfreqStem"
+lingstatDB = "lingstatsStem.db"
 import numpy as np
 
 testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
@@ -24,21 +29,21 @@ testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
 		}
 
 def getStatsCorpus(ids=[]):
-	conn = sqlite3.connect("lingstats.db")
+	conn = sqlite3.connect(lingstatDB)
 	c =  conn.cursor()
 
-	sqlTermFreq = "select word, total(freq) from termfreq where docID>=%i and docID <=%i and pos_tag='n' group by word " % (ids[0], ids[-1])
+	sqlTermFreq = "select word, total(freq) from %s where docID>=%i and docID <=%i and pos_tag='n' group by word " % (termfreqtable,			 ids[0], ids[-1])
 	c.execute(sqlTermFreq)
 	termfreq = {w: f for (w, f) in c}
 
 
-	sqlDocInSplit = "select word, COUNT(word) from termfreq where docID>=%i and docID<=%i and pos_tag='n' group by word " % (ids[0], ids[-1])
+	sqlDocInSplit = "select word, COUNT(word) from %s where docID>=%i and docID<=%i and pos_tag='n' group by word " % (termfreqtable, ids[0], ids[-1])
 	c.execute(sqlDocInSplit)
 	docFreqSplit = {w: d for (w, d) in c}
 
-	sqlDocOutSplit = "SELECT word, COUNT(word) FROM termfreq WHERE (docID<%i or docID>%i) and pos_tag='n' and " \
-					 "word in (SELECT DISTINCT word from termfreq where docID>=%i and docID<=%i and pos_tag='n')  " \
-					 "GROUP BY word " % (ids[0], ids[-1], ids[0], ids[-1])
+	sqlDocOutSplit = "SELECT word, COUNT(word) FROM %s WHERE (docID<%i or docID>%i) and pos_tag='n' and " \
+					 "word in (SELECT DISTINCT word from %s where docID>=%i and docID<=%i and pos_tag='n')  " \
+					 "GROUP BY word " % (termfreqtable, ids[0], ids[-1], termfreqtable, ids[0], ids[-1])
 	c.execute(sqlDocOutSplit)
 	for (w, d) in c:
 		docFreqSplit[w] /= d
@@ -153,10 +158,10 @@ class CorpusSplits:
 	dateMap = {}
 
 	def __init__(self):
-		conn = sqlite3.connect("lingstats.db")
+		conn = sqlite3.connect(lingstatDB)
 		c = conn.cursor()
 
-		sqlTermFreq = "select docID, word, freq from termfreq WHERE pos_tag='n'"
+		sqlTermFreq = "select docID, word, freq from %s WHERE pos_tag='n'" % (termfreqtable)
 		c.execute(sqlTermFreq)
 		for (id, word, freq) in c:
 			#print(id)
@@ -289,14 +294,14 @@ class CorpusSplits:
 		return plotDataDates, plotDataIDs, plotDataMeasure
 
 
-	def plot(self,word = [], step = 100):
-		output_file("correlation.html", title="correlation.py example")
+	def plot(self, filename="wordline.html" , word = [], step = 100):
+		output_file("../frontend/"+filename, title="correlation.py example")
 		TOOLS = "pan,wheel_zoom,box_zoom,reset,save"
 		plot = figure(x_axis_type="datetime", tools=TOOLS)
 
 		for (w,c) in zip(word, Category20[20]):
 			date, id, y = self.getWordLine(w, step = step)
-			plot.line(date, y, color=c, legend=w, muted_color=c, muted_alpha=0.2,)
+			plot.line(date, y, color=c, legend=w, muted_color=c, muted_alpha=0.01,)
 
 
 
@@ -310,8 +315,9 @@ class CorpusSplits:
 		)
 		plot.xaxis.major_label_orientation = pi / 4
 		plot.legend.click_policy = "mute"
-		show(plot)
 
+		save(plot)
+		return filename
 
 def main():
 
@@ -330,7 +336,7 @@ def main():
 	print(c.getIDsByName(word="Horen", name="corpus1"))
 	#print(c.getWordLine(word=word, step=4))
 
-	c.plot(word=["Faust", "Horen", "Brief", "Briefen", "Briefe"], step=1)
+	c.plot(filename="wordline.html", word=["Faust", "Horen", "Brief", "Briefen", "Briefe"], step=5)
 
 
 if __name__ == "__main__":
