@@ -171,6 +171,11 @@ class CorpusSplits:
 		c.execute(sqlTermFreq)
 		self.dateMap = { id :{ "year": year, "month":month, "day":day } for (id, year, month, day) in c }
 
+	def getIDsByName(self, word="", name=""):
+		for c in self.corpusList:
+			if c.name == name:
+				return [ i  for i in c.id if self.tf.get(i, {}).get(word,0) != 0 ]
+		return []
 
 	def initByDate(self, datejs = {}):
 		self.clear()
