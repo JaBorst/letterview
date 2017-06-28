@@ -19,7 +19,7 @@ from bokeh.palettes import *
 from math import pi
 from datetime import datetime as dt
 
-termfreqtable = "termfreqStem"
+termfreqtable = "termfreq"
 lingstatDB = "lingstatsStem.db"
 import numpy as np
 
@@ -72,10 +72,11 @@ class Corpus:
 	idf = {}
 
 	def __init__(self, cstart="", cend="", cname=""):
-		self.getCorpus(cstart, cend)
-		self.dates = {}
-		self.dates["start"] = cstart
-		self.dates["end"] = cend
+		if cstart != "" and cend != "":
+			self.getCorpus(cstart, cend)
+			self.dates = {}
+			self.dates["start"] = cstart
+			self.dates["end"] = cend
 		self.name = cname
 
 	def getCorpus(self, start="", end=""):
@@ -105,11 +106,24 @@ class Corpus:
 		self.contentBag = [w for body in self.content for w in tokenizeCorpus(body)]
 		self.tf, self.idf = getStatsCorpus(ids=self.id)
 
+	def getCorpusId(self, ids=[]):
+		self.id = ids
+		self.id.sort()
+		startID = self.id[0]
+		endID = self.id[-1]
+		db = "example.db"
+		conn = sqlite3.connect(db)
+		c = conn.cursor()
+		sql = "SELECT id,content FROM letters where id>=%s and id <= %s ORDER BY id ASC;" % (startID, endID)
+		c.execute(sql)
+		self.content = [[row[1]] for row in c]
+		self.contentBag = [w for body in self.content for w in tokenizeCorpus(body)]
+		self.tf, self.idf = getStatsCorpus(ids=self.id)
 
 	def getInfo(self):
 		print("Information Corpus %s:" % self.name)
-		print("Starts at = ", self.dates["start"], " (id: ", self.id[0],")")
-		print("Ends at = ", self.dates["end"], " (id: ", self.id[-1],")")
+		#print("Starts at = ", self.dates["start"], " (id: ", self.id[0],")")
+		#print("Ends at = ", self.dates["end"], " (id: ", self.id[-1],")")
 		print("Size: ", len(self.content))
 		#print(self.tf)
 
@@ -188,6 +202,16 @@ class CorpusSplits:
 			tmp = Corpus(cstart=datejs[c]["start"], cend=datejs[c]["end"], cname=c)
 			tmp.getInfo()
 			self.corpusList.append(tmp)
+
+	def initByID(self, idListOfList=[]):
+		self.clear()
+		for id in idListOfList:
+			tmp = Corpus(cname="Brief" + str(id))
+			tmp.getCorpusId(id)
+			#tmp.getInfo()
+			self.corpusList.append(tmp)
+
+
 
 	def getInfo(self):
 			print("This Split contains ",len(self.corpusList), "corpus")
@@ -321,8 +345,17 @@ class CorpusSplits:
 
 def main():
 
+	#c = CorpusSplits()
+	#c.initByDate(testData)
+
+
 	c = CorpusSplits()
-	c.initByDate(testData)
+
+	idjs = {"corpus1": {"idList" : [1]},
+			"corpus2": {"idList" : [2]},
+			"corpus3": {"idList" : [3]} }
+
+	c.initByID(idjs)
 
 	#c.getInfo()
 	#word="Faust"
@@ -330,13 +363,13 @@ def main():
 	#print(c.getPWordCloudJS(20))
 	#print(word, c.getG2(word))
 
-	#print(c.getPWordCloudJSG2(10))
+	print(c.getPWordCloudJSG2(10))
 	#print(c.getPWordCloudJS(10))
 
-	print(c.getIDsByName(word="Horen", name="corpus1"))
+	#print(c.getIDsByName(word="Horen", name="corpus1"))
 	#print(c.getWordLine(word=word, step=4))
 
-	c.plot(filename="wordline.html", word=["Faust", "Horen", "Brief", "Briefen", "Briefe"], step=5)
+	#c.plot(filename="wordline.html", word=["Faust", "Horen", "Brief", "Briefen", "Briefe"], step=5)
 
 
 if __name__ == "__main__":

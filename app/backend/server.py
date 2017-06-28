@@ -89,6 +89,20 @@ def tagclouds():
 
 	return jsonify(wc)
 
+@app.route("/dptagcloudapi", methods=['GET', 'POST'])
+def dptagclouds():
+	print("DP TAG CLOUDS")
+	print(request.json)
+	listOfInt = [ int(x) for x in request.json["ids"]]
+	listOfInt.sort()
+	listOfLists = [[int(x)] for x in  listOfInt]
+	c.initByID(listOfLists)
+
+	#c.getInfo()
+	wc = c.getPWordCloudJS(request.json["number"])
+	print(wc)
+	return jsonify(wc)
+
 
 @app.route("/idsbycorpus", methods=['GET', 'POST']) 
 def idsbycorpus(): 
