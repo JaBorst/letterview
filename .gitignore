@@ -87,8 +87,3 @@ ENV/
 
 # Rope project settings
 .ropeproject
-
-app/backend/\.idea/
-
-app/\.idea/
-.DS_Store
