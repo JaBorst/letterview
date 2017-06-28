@@ -19,8 +19,8 @@ from datetime import datetime as dt
 import numpy as np
 
 testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
-			, "2" : {"start": "1796-6-10" , "end": "1797-2-28"}
-			, "3" : {"start": "1796-6-10" , "end": "1798-5-25"}
+			#, "2" : {"start": "1796-6-10" , "end": "1797-2-28"}
+			#, "3" : {"start": "1796-6-10" , "end": "1798-5-25"}
 		}
 
 def getStatsCorpus(ids=[]):
@@ -315,7 +315,7 @@ class CorpusSplits:
 def main():
 
 	c = CorpusSplits()
-	#c.initByDate(testData)
+	c.initByDate(testData)
 
 	#c.getInfo()
 	word="Faust"
@@ -326,7 +326,7 @@ def main():
 	#print(c.getPWordCloudJSG2(10))
 	#print(c.getPWordCloudJS(10))
 
-
+	print(c.getIDsByName(word="Horen", name="corpus1"))
 	#print(c.getWordLine(word=word, step=4))
 
 
