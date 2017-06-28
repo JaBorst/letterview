@@ -61,9 +61,10 @@ function displaySelectedSection(w, corpusName){
 	xhr.onload = function(e) {
 		var objResponse = JSON.parse(this.response);
 		console.log(objResponse);
-	
-		//ToDO
-		//displayLetterContent(w, [1,2,3,4]);
+		var keywordResult = { 'word': 'keyword', 'letterIdList':objResponse };
+		localStorage.setItem('keywordResult', JSON.stringify(keywordResult));
+		document.location = "letterViewKeyword.html"
+		
 	}
 	xhr.send(JSON.stringify({"corpusname" : corpusName, "word" : w }));	
 	
