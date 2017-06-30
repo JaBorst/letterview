@@ -21,10 +21,11 @@ from datetime import datetime as dt
 
 termfreqtable = "termfreq"
 lingstatDB = "lingstatsStem.db"
+rel_pos_tag = 'n'
 import numpy as np
 
 testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
-			#, "2" : {"start": "1796-6-10" , "end": "1797-2-28"}
+			, "corpus2" : {"start": "1796-6-10" , "end": "1797-2-28"}
 			#, "3" : {"start": "1796-6-10" , "end": "1798-5-25"}
 		}
 
@@ -32,18 +33,18 @@ def getStatsCorpus(ids=[]):
 	conn = sqlite3.connect(lingstatDB)
 	c =  conn.cursor()
 
-	sqlTermFreq = "select word, total(freq) from %s where docID>=%i and docID <=%i and pos_tag='n' group by word " % (termfreqtable,			 ids[0], ids[-1])
+	sqlTermFreq = "select word, total(freq) from %s where docID>=%i and docID <=%i and pos_tag='%s' group by word " % (termfreqtable,ids[0], ids[-1],rel_pos_tag)
 	c.execute(sqlTermFreq)
 	termfreq = {w: f for (w, f) in c}
 
 
-	sqlDocInSplit = "select word, COUNT(word) from %s where docID>=%i and docID<=%i and pos_tag='n' group by word " % (termfreqtable, ids[0], ids[-1])
+	sqlDocInSplit = "select word, COUNT(word) from %s where docID>=%i and docID<=%i and pos_tag='%s' group by word " % (termfreqtable, ids[0], ids[-1],rel_pos_tag)
 	c.execute(sqlDocInSplit)
 	docFreqSplit = {w: d for (w, d) in c}
 
-	sqlDocOutSplit = "SELECT word, COUNT(word) FROM %s WHERE (docID<%i or docID>%i) and pos_tag='n' and " \
-					 "word in (SELECT DISTINCT word from %s where docID>=%i and docID<=%i and pos_tag='n')  " \
-					 "GROUP BY word " % (termfreqtable, ids[0], ids[-1], termfreqtable, ids[0], ids[-1])
+	sqlDocOutSplit = "SELECT word, COUNT(word) FROM %s WHERE (docID<%i or docID>%i) and pos_tag='%s' and " \
+					 "word in (SELECT DISTINCT word from %s where docID>=%i and docID<=%i and pos_tag='%s')  " \
+					 "GROUP BY word " % (termfreqtable, ids[0], ids[-1],rel_pos_tag, termfreqtable, ids[0], ids[-1],rel_pos_tag)
 	c.execute(sqlDocOutSplit)
 	for (w, d) in c:
 		docFreqSplit[w] /= d
@@ -170,18 +171,21 @@ class CorpusSplits:
 	corpusList = []
 	tf = {}
 	dateMap = {}
+	df = {}
 
 	def __init__(self):
 		conn = sqlite3.connect(lingstatDB)
 		c = conn.cursor()
 
-		sqlTermFreq = "select docID, word, freq from %s WHERE pos_tag='n'" % (termfreqtable)
+		sqlTermFreq = "select docID, word, freq from %s WHERE pos_tag='%s'" % (termfreqtable,rel_pos_tag)
 		c.execute(sqlTermFreq)
 		for (id, word, freq) in c:
 			#print(id)
 			if id not in self.tf.keys():
 				self.tf[id] = {}
 			self.tf[id][word] = freq
+			self.df[word] = self.df.get(word,0) +1
+			
 		conn.close()
 
 		conn = sqlite3.connect("example.db")
@@ -189,6 +193,8 @@ class CorpusSplits:
 		sqlTermFreq = "select id, year, month, day from letters"
 		c.execute(sqlTermFreq)
 		self.dateMap = { id :{ "year": year, "month":month, "day":day } for (id, year, month, day) in c }
+		print("Initialized")
+
 
 	def getIDsByName(self, word="", name=""):
 		for c in self.corpusList:
@@ -256,15 +262,28 @@ class CorpusSplits:
 	def getPWordCloudJSG2(self, n=20):
 		return {self.corpusList[c].name: self.getPWordCloudG2_single(c,n) for c in range(0,len(self.corpusList))}
 
+	def getPWordCloudJSG2IDF(self, n=20):
+		return {self.corpusList[c].name: self.getPWordCloudG2IDF_single(c,n) for c in range(0,len(self.corpusList))}
+
 
 	def getPWordCloudG2_single(self, corpus = None,n=10):
 		highest = self.getHighestRankedG2(corpus,n)
 		max = highest[0][1]
 		#print("highest", highest)
 		return {w: float(f) / float(max) for (w, f) in highest}
+	
+	def getPWordCloudG2IDF_single(self, corpus = None,n=10):
+		highest = self.getHighestRankedG2IDF(corpus,n)
+		max = highest[0][1]
+		#print("highest", highest)
+		return {w: float(f) / float(max) for (w, f) in highest}
 
 	def getHighestRankedG2(self, corpus = 0 , n=10):
 		g2 = [(word, self.getG2_single( corpus, word)) for word in self.corpusList[corpus].tf.keys()]
+		return sorted(g2, key=operator.itemgetter(1),reverse=True)[:n]
+	
+	def getHighestRankedG2IDF(self, corpus = 0 , n=10):
+		g2 = [(word, self.getG2_single( corpus, word)/self.df.get(word, 1)) for word in self.corpusList[corpus].tf.keys()]
 		return sorted(g2, key=operator.itemgetter(1),reverse=True)[:n]
 
 	def clear(self):
@@ -296,7 +315,7 @@ class CorpusSplits:
 				e1 = c * (a + b) / (c + d)
 				e2 = d * (a + b) / (c + d)
 				g2 = 2 * (a * math.log(a / e1, math.e) + b * math.log(b / e2, math.e))
-
+				
 				try:
 
 					years =  [ self.dateMap.get(i,{}).get("year",0) for i in batch if self.dateMap.get(i,{}).get("year",0) ]
@@ -317,6 +336,55 @@ class CorpusSplits:
 
 		return plotDataDates, plotDataIDs, plotDataMeasure
 
+	def getWordLineG2IDF(self, word ="", step=5, ):
+
+	
+		plotDataDates = []
+		plotDataIDs = []
+		plotDataMeasure =[]
+	
+		for batchStart in list(self.dateMap.keys())[::step]:
+			if batchStart+step > list(self.dateMap.keys())[-1]:
+				break
+			else:
+	
+				batch = range(batchStart, batchStart+step)
+	
+				#remainder = [elt for num, elt in enumerate(self.corpusList) if not num in batch]
+	
+	
+				a = sum( [ self.tf.get(i,{}).get(word,0) for i in batch ] ) + 0.0001
+				b = sum( [ self.tf.get(i,{}).get(word,0) for i in list(self.dateMap.keys()) if i not in batch ] ) + 0.0001
+	
+				c = sum( [ sum(self.tf.get(i,{}).values()) for i in batch])
+				d = sum( [ sum(self.tf.get(i,{}).values()) for i in list(self.dateMap.keys()) if i not in batch ])
+	
+				e1 = c * (a + b) / (c + d)
+				e2 = d * (a + b) / (c + d)
+				g2 = 2 * (a * math.log(a / e1, math.e) + b * math.log(b / e2, math.e))
+				
+				g2idf = g2 / self.df.get(word,1)
+				
+				try:
+	
+					years =  [ self.dateMap.get(i,{}).get("year",0) for i in batch if self.dateMap.get(i,{}).get("year",0) ]
+					months = [ self.dateMap.get(i,{}).get("month",0) for i in batch if self.dateMap.get(i,{}).get("month",0)]
+					days   = [ self.dateMap.get(i,{}).get("day",0) for i in batch if self.dateMap.get(i,{}).get("day",0) ]
+	
+					if len(years) == 0 or len ( months) == 0 or len(days) == 0:
+						pass
+					else:
+						plotDataDates.append(dt(day=days[0], year=years[0], month=months[0]))
+						plotDataIDs.append(batchStart)
+						plotDataMeasure.append(g2idf)
+	
+				except (ValueError, ):
+					pass
+	
+	
+	
+		return plotDataDates, plotDataIDs, plotDataMeasure
+
 
 	def plot(self, filename="wordline.html" , word = [], step = 100):
 		output_file("../frontend/"+filename, title="correlation.py example")
@@ -324,7 +392,7 @@ class CorpusSplits:
 		plot = figure(x_axis_type="datetime", tools=TOOLS)
 
 		for (w,c) in zip(word, Category20[20]):
-			date, id, y = self.getWordLine(w, step = step)
+			date, id, y = self.getWordLineG2IDF(w, step = step)
 			plot.line(date, y, color=c, legend=w, muted_color=c, muted_alpha=0.01,)
 
 
@@ -343,6 +411,12 @@ class CorpusSplits:
 		save(plot)
 		return filename
 
+
+	def set_pos_tag(self, pt = 'n'):
+		global rel_pos_tag
+		rel_pos_tag = pt
+		self.__init__()
+
 def main():
 
 	#c = CorpusSplits()
@@ -355,7 +429,7 @@ def main():
 			"corpus2": {"idList" : [2]},
 			"corpus3": {"idList" : [3]} }
 
-	c.initByID(idjs)
+	c.initByDate(testData)
 
 	#c.getInfo()
 	#word="Faust"
@@ -363,6 +437,9 @@ def main():
 	#print(c.getPWordCloudJS(20))
 	#print(word, c.getG2(word))
 
+	print(c.getPWordCloudJSG2(10))
+	c.set_pos_tag('v')
+	c.initByDate(testData)
 	print(c.getPWordCloudJSG2(10))
 	#print(c.getPWordCloudJS(10))
 

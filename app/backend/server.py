@@ -71,7 +71,7 @@ def ptagclouds():
 	c.initByDate(request.json["dates"])
 
 	c.getInfo()
-	wc = c.getPWordCloudJS(request.json["number"])
+	wc = c.getPWordCloudJSG2IDF(int(request.json["number"]))
 	print(wc)
 	return jsonify(wc)
 
@@ -83,7 +83,7 @@ def tagclouds():
 	c.initByDate(request.json)
 
 	c.getInfo()
-	wc = c.getWordCloudJS(20)
+	wc = c.getWordCloudJS(int(request.json["number"]))
 	print(wc)
 
 
@@ -99,7 +99,7 @@ def dptagclouds():
 	c.initByID(listOfLists)
 
 	#c.getInfo()
-	wc = c.getPWordCloudJS(request.json["number"])
+	wc = c.getPWordCloudJS(int(request.json["number"]))
 	print(wc)
 	return jsonify(wc)
 
@@ -120,8 +120,16 @@ def idsbycorpus():
 def wordlines():
 	print("wordlines")
 	print(request.json)
-	diagram = get_file(c.plot( word=request.json["wordlist"].split(','), step=10))
+	diagram = get_file(c.plot( word=request.json["wordlist"].split(','), step=int(request.json["granularity"])))
 	return Response(diagram, mimetype="text/html")
+
+@app.route("/changePos", methods=['POST'])
+def changePos():
+	print("changePos")
+	print(request.json)
+	c.set_pos_tag(pt=request.json)
+
+	return jsonify({"status":200})
 
 
 

@@ -2,6 +2,28 @@
 
 
 var result;
+var numberOfWords=10;
+var granularity = 10;
+
+function setPosTag(){
+	var selectBox = document.getElementById("postag");
+    var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+    //alert(selectedValue);
+	xhr.open('POST', 'http://0.0.0.0:5000/changePos', true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onload = function(e) {
+		console.log("Pos Tag CHanged");
+		CreateParallelWordClouds();
+	}
+	xhr.send(JSON.stringify(selectedValue));
+}
+function setNumberWords(){
+	numberOfWords = document.getElementById("numberOfWords").value;
+	//CreateParallelWordClouds();
+}
+function setPlotGranularity(){
+	granularity = document.getElementById("granularity").value;
+}
 
 // Get the modal
 var modal = document.getElementById('myModal');
@@ -63,7 +85,7 @@ function displaySelectedSection(w, corpusName){
 		console.log(objResponse);
 		var keywordResult = { 'word': w, 'letterIdList':objResponse };
 		localStorage.setItem('keywordResult', JSON.stringify(keywordResult));
-		document.location = "letterViewKeyword.html";
+		window.open("letterViewKeyword.html");
 		
 	}
 	xhr.send(JSON.stringify({"corpusname" : corpusName, "word" : w }));	
@@ -97,11 +119,11 @@ function createForeignObject(cont,x ,y , size){
     fo.setAttribute('height',"100%");
 	var div = document.createElement("div");
 	div.setAttribute("id", "ptagdiv");
-	div.style.backgroundColor =  hexToRGB("#" + intToRGB(hashCode(cont)), 0.4 );
+	div.style.backgroundColor =  hexToRGB("#" + intToRGB(hashCode(cont)), 0.01 );
 	div.style.fontSize = String(size)+"pt";
 	div.innerHTML= cont;
 	fo.append(div);
-	console.log("foreignObject created" + intToRGB(hashCode(w)) +"  fade(#" + intToRGB(hashCode(cont)) + ", 80%)" );
+	console.log("foreignObject created" + intToRGB(hashCode(w)) +"  fade(#" + intToRGB(hashCode(cont)) + ", 10%)" );
 	return fo;
 
 }
@@ -188,7 +210,7 @@ function createSVGContent(svgelement, wordData){
 				l.setAttribute("stroke-opacity","0.5");
 				l.setAttribute('stroke-width',"2");
 				l.setAttribute('z-index',"-5");
-				l.setAttribute('stroke',"#" + intToRGB(hashCode(w)));
+				l.setAttribute('stroke', hexToRGB("#" + intToRGB(hashCode(w)), 0.3 ));
 				svgelement.append(l);
 
 			}
@@ -238,7 +260,9 @@ function updateApplicationWindow(){
 
 
 function CreateParallelWordClouds(j){
-	console.log("Creating wordclouds");
+	var container = document.getElementById("timeline");
+	container.onscroll="";
+	console.log("Creating  parallel wordclouds");
 	
 	var api = "http://0.0.0.0:5000/ptagcloudapi";
 	var xhr = new XMLHttpRequest();
@@ -276,16 +300,109 @@ function CreateParallelWordClouds(j){
 		
 	};
 	
-	
-	xhr.send(JSON.stringify({dates:result, number:20}));	
+	console.log("numberOfWords:	" +numberOfWords);
+	xhr.send(JSON.stringify({dates:result, number:numberOfWords}));	
 	console.log("Wordclouds Created");	
+}
+
+
+
+function createDynamicSVGContent(svgelement, wordData){
+	var x = 40;
+	var y = 20;
+	var ydelta = 40;
+	var xdelta = 200;
+
+	var connectWords = {};
+
+	//Find out if there are words to connect
+	console.log(Object.keys(wordData).length);
+	for(var i = 1; i < Object.keys(wordData).length; i++) {
+		console.log(i);
+
+		corpusKeys1 = Object.keys(wordData[Object.keys(wordData)[i]]);
+
+		corpusKeys2 = Object.keys(wordData[Object.keys(wordData)[i-1]]);
+		console.log(corpusKeys1);
+		var common = $.grep(corpusKeys1, function(element) {
+			    return $.inArray(element, corpusKeys2 ) !== -1;
+			});
+
+		for (w in common){
+			connectWords[Object.keys(wordData)[i]] = {};
+			connectWords[Object.keys(wordData)[i]][w] = {};
+		}
+	}
+	console.log(connectWords);
+
+	var i = 0 ;
+	savedCoordinates={};
+	savedCoordinatesActual = {};
+	for (corp in wordData){
+		var y = 20;
+		jObj = createForeignObjectTitle(corp, x, y, 20);
+		jObj.setAttribute("onclick", "corpusWordlines('" + corp + "', '" + Object.keys(wordData[corp]) + "')");
+		svgelement.append(jObj);
+		for (w in wordData[corp]){
+
+
+			//New ELEMENT
+			var fsize = (1-(1-wordData[corp][w])*(1-wordData[corp][w])) * 25; 
+			//console.log(w + " " + fsize + "x: " + x);
+			y = y + ydelta;
+			jObj = createForeignObject(w,x,y,fsize);
+			jObj.setAttribute("onclick", "dynamicSVGLink('" + w +"'," + corp.replace("Brief","") +")");
+			svgelement.append(jObj);
+
+			//Now See if we already got that element last column
+			if (savedCoordinates.hasOwnProperty(w)){
+				console.log("This word occured last column: " + w);
+				console.log("Coordinates: x:" + savedCoordinates[w]['x'] + " y:" + savedCoordinates[w]['y']);
+
+				paddingCorrection = 15 + 10;
+
+				oldX = savedCoordinates[w]['x'] + paddingCorrection;
+				oldY = savedCoordinates[w]['y'] + paddingCorrection;
+
+				var l = document.createElementNS('http://www.w3.org/2000/svg',"line");
+				l.setAttribute("x1",oldX);
+				l.setAttribute("y1",oldY);
+				l.setAttribute("x2",x + paddingCorrection);
+				l.setAttribute("y2",y + paddingCorrection);
+				l.setAttribute("stroke-opacity","0.5");
+				l.setAttribute('stroke-width',"2");
+				l.setAttribute('z-index',"-5");
+				l.setAttribute('stroke', hexToRGB("#" + intToRGB(hashCode(w)), 0.3 ));
+				svgelement.append(l);
+
+			}
+
+			savedCoordinatesActual[w] = {};
+			savedCoordinatesActual[w]['x'] = x;
+			savedCoordinatesActual[w]['y'] = y;
+
+		}
+		savedCoordinates = {}
+		savedCoordinates = savedCoordinatesActual;
+		savedCoordinatesActual = {};
+		x = x + xdelta;
+		i = i + 1;
+	}
+
+
+}
+
+function dynamicSVGLink(w, idlist){
+	var keywordResult = { 'word': w, 'letterIdList':idlist };
+	localStorage.setItem('keywordResult', JSON.stringify(keywordResult));
+	window.open("letterViewKeyword.html");
 }
 
 function dynamicParallelWordClouds(){
 	
 	localStorage.setItem('shownIDs', JSON.stringify(["1","2", "3"]));
   /* return the ids of current visible letters, result stores in currentIds  */
-  var container = $('.ScrollableContent');
+  var container = $('#timeline');
   var pos = $('.timelineItem').map(function () {
     var $this = $(this);
     return {el: $this, top: $this.offset().top};
@@ -336,12 +453,13 @@ function dynamicParallelWordClouds(){
 			svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
 	
 			node.append(svg);		
-			createSVGContent(svg, objResponse);
+			createDynamicSVGContent(svg, objResponse);
+			
 			
 		}
 		
 		
-		xhr.send(JSON.stringify({ids:listOfShownIDs, number:20}));	
+		xhr.send(JSON.stringify({ids:listOfShownIDs, number:numberOfWords}));	
 		console.log("dpWordclouds Created");	
 		
 	}
@@ -375,7 +493,7 @@ function corpusWordlines(corpusName, wordlist){
 
 		//Cleaning the Application node
 		
-		document.location = "wordline.html";
+		window.open("wordline.html");
 	}
 	xhr.send(JSON.stringify(postWordlineData));	
 	console.log("Wordclouds Created");	
