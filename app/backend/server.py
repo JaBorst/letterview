@@ -71,7 +71,7 @@ def ptagclouds():
 	c.initByDate(request.json["dates"])
 
 	c.getInfo()
-	wc = c.getPWordCloudJSG2IDF(int(request.json["number"]))
+	wc = c.getPWordCloud(num=int(request.json["number"]))
 	print(wc)
 	return jsonify(wc)
 
@@ -99,7 +99,8 @@ def dptagclouds():
 	c.initByID(listOfLists)
 
 	#c.getInfo()
-	wc = c.getPWordCloudJS(int(request.json["number"]))
+	print(int(request.json["number"]))
+	wc = c.getPWordCloud(num=int(request.json["number"]))
 	print(wc)
 	return jsonify(wc)
 
@@ -123,6 +124,9 @@ def wordlines():
 	diagram = get_file(c.plot( word=request.json["wordlist"].split(','), step=int(request.json["granularity"])))
 	return Response(diagram, mimetype="text/html")
 
+
+
+
 @app.route("/changePos", methods=['POST'])
 def changePos():
 	print("changePos")
@@ -131,7 +135,13 @@ def changePos():
 
 	return jsonify({"status":200})
 
+@app.route("/changeMeasure", methods=['POST'])
+def changeMeasure():
+	print("changeMeasure")
+	print(request.json)
+	c.set_measure(measure=request.json)
 
+	return jsonify({"status":200})
 
 
 

@@ -82,6 +82,11 @@
 						<option value="v">Verb</option>
 						<option value="a">Adjektiv</option>
 					</select>
+					<select id="measure" onchange="setMeasure();">
+						<option value="tfidf">tf-idf</option>
+						<option value="g2">g2</option>
+						<option value="g2idf">g2idf</option>
+					</select>
 					Number Of Words: <input id="numberOfWords" onchange="setNumberWords();" type="number" name="quantity" value=10 min=5 max=30>
 					Plot Granularity: <input id="granularity" onchange="setPlotGranularity();" type="number" name="quantity" value=10 min=1 max=100>
 				</div>

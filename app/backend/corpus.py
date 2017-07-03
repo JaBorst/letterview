@@ -22,6 +22,8 @@ from datetime import datetime as dt
 termfreqtable = "termfreq"
 lingstatDB = "lingstatsStem.db"
 rel_pos_tag = 'n'
+measurement = 'tfidf'
+allowed_measurements = ["tfidf", "g2", "g2idf"]
 import numpy as np
 
 testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
@@ -248,6 +250,40 @@ class CorpusSplits:
 			return 2 * (a * math.log(a/e1 , math.e) + b * math.log(b/e2,math.e ))
 		else:
 			return 0
+		
+	def getG2_single_global(self, i, word = ""):
+		remainderIds = set(self.tf.keys()) - set(self.corpusList[i].id)
+		focussedIds = self.corpusList[i].id
+		a = sum([self.tf.get(id,{}).get(word, 0.0001) for id in focussedIds])
+		b = sum([self.tf.get(id,{}).get(word, 0) for id in remainderIds])
+		c = sum([sum(list(self.tf.get(id,{}).values())) for id in focussedIds])
+		print(self.tf.get(id,{}).values())
+		d = sum([sum(list(self.tf.get(id,{}).values())) for id in remainderIds])
+		
+		print(a,b,c,d)
+		
+		e1 = c * (a + b) / (c + d)
+		e2 = d * (a + b) / (c + d)
+		if a != 0 and b !=0:
+			return 2 * (a * math.log(a/e1 , math.e) + b * math.log(b/e2,math.e ))
+		else:
+			return 0
+		
+	# def getG2_single_global(self, letterId, word = ""):
+	# 	a = self.tf.get(letterId,{}).get(word, 0.0001)
+	# 	b = sum([self.tf.get(id,{}).get(word, 0) for id in self.tf.keys() if id != letterId])
+	# 	c = sum(list(self.tf.get(letterId,{}).values()))
+	# 	print(self.tf.get(letterId,{}).values())
+	# 	d = sum([sum(self.tf.get(id,{}).values()) for id in self.tf.keys() if id != letterId])
+	# 	
+	# 	print(a,b,c,d)
+	# 	
+	# 	e1 = c * (a + b) / (c + d)
+	# 	e2 = d * (a + b) / (c + d)
+	# 	if a != 0 and b !=0:
+	# 		return 2 * (a * math.log(a/e1 , math.e) + b * math.log(b/e2,math.e ))
+	# 	else:
+	# 		return 0
 
 
 	def gettfidf(self, word=""):
@@ -274,21 +310,25 @@ class CorpusSplits:
 	
 	def getPWordCloudG2IDF_single(self, corpus = None,n=10):
 		highest = self.getHighestRankedG2IDF(corpus,n)
-		max = highest[0][1]
+		max = highest[0][1] if highest[0][1] !=0 else 1
 		#print("highest", highest)
 		return {w: float(f) / float(max) for (w, f) in highest}
 
 	def getHighestRankedG2(self, corpus = 0 , n=10):
-		g2 = [(word, self.getG2_single( corpus, word)) for word in self.corpusList[corpus].tf.keys()]
+		g2 = [(word, self.getG2_single_global( corpus, word)) for word in self.corpusList[corpus].tf.keys()]
 		return sorted(g2, key=operator.itemgetter(1),reverse=True)[:n]
 	
 	def getHighestRankedG2IDF(self, corpus = 0 , n=10):
-		g2 = [(word, self.getG2_single( corpus, word)/self.df.get(word, 1)) for word in self.corpusList[corpus].tf.keys()]
+		g2 = [(word, self.getG2_single_global( corpus, word)/self.df.get(word, 1)) for word in self.corpusList[corpus].tf.keys()]
 		return sorted(g2, key=operator.itemgetter(1),reverse=True)[:n]
 
 	def clear(self):
 		self.dates = {}
 		self.corpusList = []
+		
+		
+		
+	
 
 	def getWordLine(self, word ="", step=5, ):
 
@@ -416,6 +456,27 @@ class CorpusSplits:
 		global rel_pos_tag
 		rel_pos_tag = pt
 		self.__init__()
+		
+	def set_measure(self, measure = 'tfidf'):
+		global measurement
+		if measure in allowed_measurements:
+			measurement = measure
+			print("Measurement changed to: ", measurement)
+		
+	def getPWordCloud(self, num=20, method=""):
+		useMethod = ""
+		if method != "":
+			useMethod = method
+		else:
+			global measurement
+			useMethod = measurement
+			
+		if measurement == "tfidf":
+			return self.getPWordCloudJS(n=num)
+		elif measurement == 'g2':
+			return self.getPWordCloudJSG2(n=num)
+		elif measurement == 'g2idf':
+			return self.getPWordCloudJSG2IDF(n=num)
 
 def main():
 

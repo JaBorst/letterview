@@ -13,10 +13,25 @@ function setPosTag(){
 	xhr.setRequestHeader("Content-Type", "application/json");
 	xhr.onload = function(e) {
 		console.log("Pos Tag CHanged");
-		CreateParallelWordClouds();
+		
 	}
 	xhr.send(JSON.stringify(selectedValue));
 }
+
+
+function setMeasure(){
+	var selectBox = document.getElementById("measure");
+    var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+    //alert(selectedValue);
+	xhr.open('POST', 'http://0.0.0.0:5000/changeMeasure', true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onload = function(e) {
+		console.log("Measurement Changed");
+		
+	}
+	xhr.send(JSON.stringify(selectedValue));
+}
+
 function setNumberWords(){
 	numberOfWords = document.getElementById("numberOfWords").value;
 	//CreateParallelWordClouds();
@@ -123,10 +138,19 @@ function createForeignObject(cont,x ,y , size){
 	div.style.fontSize = String(size)+"pt";
 	div.innerHTML= cont;
 	fo.append(div);
-	console.log("foreignObject created" + intToRGB(hashCode(w)) +"  fade(#" + intToRGB(hashCode(cont)) + ", 10%)" );
+	//console.log("foreignObject created" + intToRGB(hashCode(w)) +"  fade(#" + intToRGB(hashCode(cont)) + ", 10%)" );
 	return fo;
 
 }
+
+function cut(n, min){
+	if (n<min){
+		return min;
+	}else{
+		return n;
+	}
+}
+
 function createForeignObjectTitle(cont,x ,y , size){
 
 	var fo = document.createElementNS('http://www.w3.org/2000/svg',"foreignObject");
@@ -140,7 +164,7 @@ function createForeignObjectTitle(cont,x ,y , size){
 	div.style.fontSize = String(size)+"pt";
 	div.innerHTML= "<b><u>" + cont + "</u></b>";
 	fo.append(div);
-	console.log("foreignObject created" + intToRGB(hashCode(w)) +"  fade(#" + intToRGB(hashCode(cont)) + ", 80%)" );
+	//console.log("foreignObject created" + intToRGB(hashCode(w)) +"  fade(#" + intToRGB(hashCode(cont)) + ", 80%)" );
 	return fo;
 
 }
@@ -156,12 +180,12 @@ function createSVGContent(svgelement, wordData){
 	//Find out if there are words to connect
 	console.log(Object.keys(wordData).length);
 	for(var i = 1; i < Object.keys(wordData).length; i++) {
-		console.log(i);
+		//console.log(i);
 
 		corpusKeys1 = Object.keys(wordData[Object.keys(wordData)[i]]);
 
 		corpusKeys2 = Object.keys(wordData[Object.keys(wordData)[i-1]]);
-		console.log(corpusKeys1);
+		//console.log(corpusKeys1);
 		var common = $.grep(corpusKeys1, function(element) {
 			    return $.inArray(element, corpusKeys2 ) !== -1;
 			});
@@ -171,7 +195,7 @@ function createSVGContent(svgelement, wordData){
 			connectWords[Object.keys(wordData)[i]][w] = {};
 		}
 	}
-	console.log(connectWords);
+	//console.log(connectWords);
 
 	var i = 0 ;
 	savedCoordinates={};
@@ -185,7 +209,7 @@ function createSVGContent(svgelement, wordData){
 
 
 			//New ELEMENT
-			var fsize = (1-(1-wordData[corp][w])*(1-wordData[corp][w])) * 25; 
+			var fsize = cut((1-(1-wordData[corp][w])*(1-wordData[corp][w])) * 25, 0.3); 
 			//console.log(w + " " + fsize + "x: " + x);
 			y = y + ydelta;
 			jObj = createForeignObject(w,x,y,fsize);
@@ -194,8 +218,8 @@ function createSVGContent(svgelement, wordData){
 
 			//Now See if we already got that element last column
 			if (savedCoordinates.hasOwnProperty(w)){
-				console.log("This word occured last column: " + w);
-				console.log("Coordinates: x:" + savedCoordinates[w]['x'] + " y:" + savedCoordinates[w]['y']);
+				//console.log("This word occured last column: " + w);
+				//console.log("Coordinates: x:" + savedCoordinates[w]['x'] + " y:" + savedCoordinates[w]['y']);
 
 				paddingCorrection = 15 + 10;
 
@@ -260,8 +284,10 @@ function updateApplicationWindow(){
 
 
 function CreateParallelWordClouds(j){
+
 	var container = document.getElementById("timeline");
-	container.onscroll="";
+	container.removeEventListener("scroll",pTagScrollDebounced);
+	console.log(container.onscroll);
 	console.log("Creating  parallel wordclouds");
 	
 	var api = "http://0.0.0.0:5000/ptagcloudapi";
@@ -318,12 +344,12 @@ function createDynamicSVGContent(svgelement, wordData){
 	//Find out if there are words to connect
 	console.log(Object.keys(wordData).length);
 	for(var i = 1; i < Object.keys(wordData).length; i++) {
-		console.log(i);
+		//console.log(i);
 
 		corpusKeys1 = Object.keys(wordData[Object.keys(wordData)[i]]);
 
 		corpusKeys2 = Object.keys(wordData[Object.keys(wordData)[i-1]]);
-		console.log(corpusKeys1);
+		//console.log(corpusKeys1);
 		var common = $.grep(corpusKeys1, function(element) {
 			    return $.inArray(element, corpusKeys2 ) !== -1;
 			});
@@ -333,7 +359,7 @@ function createDynamicSVGContent(svgelement, wordData){
 			connectWords[Object.keys(wordData)[i]][w] = {};
 		}
 	}
-	console.log(connectWords);
+	//console.log(connectWords);
 
 	var i = 0 ;
 	savedCoordinates={};
@@ -347,7 +373,7 @@ function createDynamicSVGContent(svgelement, wordData){
 
 
 			//New ELEMENT
-			var fsize = (1-(1-wordData[corp][w])*(1-wordData[corp][w])) * 25; 
+			var fsize = cut((1-(1-wordData[corp][w])*(1-wordData[corp][w])), 0.3) * 25; 
 			//console.log(w + " " + fsize + "x: " + x);
 			y = y + ydelta;
 			jObj = createForeignObject(w,x,y,fsize);
@@ -356,9 +382,9 @@ function createDynamicSVGContent(svgelement, wordData){
 
 			//Now See if we already got that element last column
 			if (savedCoordinates.hasOwnProperty(w)){
-				console.log("This word occured last column: " + w);
-				console.log("Coordinates: x:" + savedCoordinates[w]['x'] + " y:" + savedCoordinates[w]['y']);
-
+				//console.log("This word occured last column: " + w);
+				//console.log("Coordinates: x:" + savedCoordinates[w]['x'] + " y:" + savedCoordinates[w]['y']);
+//
 				paddingCorrection = 15 + 10;
 
 				oldX = savedCoordinates[w]['x'] + paddingCorrection;
@@ -398,17 +424,24 @@ function dynamicSVGLink(w, idlist){
 	window.open("letterViewKeyword.html");
 }
 
-function dynamicParallelWordClouds(){
-	
-	localStorage.setItem('shownIDs', JSON.stringify(["1","2", "3"]));
-  /* return the ids of current visible letters, result stores in currentIds  */
-  var container = $('#timeline');
-  var pos = $('.timelineItem').map(function () {
-    var $this = $(this);
-    return {el: $this, top: $this.offset().top};
-  }).get();
 
-  container.on('scroll', function () {
+
+
+function debounce(method, delay) {
+    clearTimeout(method._tId);
+    method._tId= setTimeout(function(){
+        method();
+    }, delay);
+}
+
+
+function pTagOnScroll() {
+	/* return the ids of current visible letters, result stores in currentIds  */
+	
+		var pos = $('.timelineItem').map(function () {
+		var $this = $(this);
+		return {el: $this, top: $this.offset().top};
+	}).get();
     currentIds = [];
     var scrollTop = $(this).scrollTop();
     var scrollBottom = scrollTop + $(this).height();
@@ -425,9 +458,10 @@ function dynamicParallelWordClouds(){
 	//console.log(JSON.parse(localStorage.getItem('shownIDs') ));
 	
 	if(localStorage.getItem('currentIDs') != localStorage.getItem('shownIDs') ){
+		
 		console.log("changesd");
+		listOfShownIDs = JSON.parse(localStorage.getItem('currentIDs')).slice(0,3);
 		localStorage.setItem('shownIDs', JSON.stringify(currentIds));
-		listOfShownIDs = JSON.parse(localStorage.getItem('shownIDs')).slice(0,3);
 		var api = "http://0.0.0.0:5000/dptagcloudapi";
 		var xhr = new XMLHttpRequest();
 		xhr.open('POST', api, true);
@@ -456,6 +490,7 @@ function dynamicParallelWordClouds(){
 			createDynamicSVGContent(svg, objResponse);
 			
 			
+			
 		}
 		
 		
@@ -467,7 +502,20 @@ function dynamicParallelWordClouds(){
 	
 	
 	
-  })
+  }
+  
+ function pTagScrollDebounced(){
+	debounce(pTagOnScroll, 500)
+ }
+
+
+function dynamicParallelWordClouds(){
+	
+	
+  /*Add the Scroll Listener and creator of the dynamic parallel Tagclouds*/
+  localStorage.setItem('shownIDs', JSON.stringify([]));
+  var container = document.getElementById("timeline");
+  container.addEventListener('scroll', pTagScrollDebounced);
   
 }
 
