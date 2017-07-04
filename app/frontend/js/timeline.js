@@ -6,47 +6,47 @@ xhr.responseType = 'arraybuffer'
 var currentIds = []
 
 xhr.onload = function (e) {
-  console.log(this.response)
-  var uInt8Array = new Uint8Array(this.response)
-  var db = new SQL.Database(uInt8Array)
-  contents = db.exec('SELECT * FROM letters LIMIT 100') // show the contents of table letters
+  console.log(this.response);
+  var uInt8Array = new Uint8Array(this.response);
+  var db = new SQL.Database(uInt8Array);
+  contents = db.exec('SELECT * FROM letters LIMIT 100'); // show the contents of table letters
   // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
 
   // console.log(contents[0].values.length);
-  contentsLen = contents[0].values.length
-  var direction
-  var author
-  var monthAbbr = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.']
+  contentsLen = contents[0].values.length;
+  var direction;
+  var author;
+  var monthAbbr = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
   /* the letters from goethe are on the left of timeline, schiller on the right, the direction is decided by the 7th paramether of each letter object,
   but some of them are not correct I think(not sure), and many dates (parameter 2,3,4) are not correct also */
   for (var i = 0; i < contentsLen; i++) {
     if (contents[0].values[i][7] == 'G') {
-      direction = 'direction-l'
-      author = 'Goethe'
+      direction = 'direction-l';
+      author = 'Goethe';
     } else {
-      direction = 'direction-r'
-      author = 'Schiller'
+      direction = 'direction-r';
+      author = 'Schiller';
     }
     if (i !== contentsLen - 1) {
-      var dayThisLetter = contents[0].values[i][2] * 365 + contents[0].values[i][3] * 30 + contents[0].values[i][4]
-      var dayNextLetter = contents[0].values[i + 1][2] * 365 + contents[0].values[i + 1][3] * 30 + contents[0].values[i + 1][4]
-      var intervalTwoLetters = dayNextLetter - dayThisLetter
+      var dayThisLetter = contents[0].values[i][2] * 365 + contents[0].values[i][3] * 30 + contents[0].values[i][4];
+      var dayNextLetter = contents[0].values[i + 1][2] * 365 + contents[0].values[i + 1][3] * 30 + contents[0].values[i + 1][4];
+      var intervalTwoLetters = dayNextLetter - dayThisLetter;
     /* the space between two vertical adjacent letters is ajusted according to the time difference, each day for 5px */
-      var correspondingPaddingBottomNum = Math.abs(intervalTwoLetters * 5 + 18)
+      var correspondingPaddingBottomNum = Math.abs(intervalTwoLetters * 5 + 18);
       if (correspondingPaddingBottomNum > 1000) {
-        correspondingPaddingBottomNum = 150
+        correspondingPaddingBottomNum = 150;
       }
-      var correspondingPaddingBottom = correspondingPaddingBottomNum + 'px'
+      var correspondingPaddingBottom = correspondingPaddingBottomNum + 'px';
     } else {
-      var correspondingPaddingBottom = '0px'
+      var correspondingPaddingBottom = '0px';
     }
-    var dateTime = contents[0].values[i][4] + '&nbsp&nbsp' + monthAbbr[parseInt(contents[0].values[i][3]) - 1] + '&nbsp' + contents[0].values[i][2]
-    linkUrl = contents[0].values[i][6]
-    letterContent = contents[0].values[i][5].slice(0, 100)
-    $('#mainTimeLine').append('<li class="timelineItem" id=' + contents[0].values[i][0] + " style='padding-bottom:" + correspondingPaddingBottom + "'><div class='" + direction + "'><div class='flag-wrapper'><span class='flag'>" + author + "</span><span class='time-wrapper'><span class='time'>" + dateTime + "</span></span></div><div class='desc'>" + letterContent + '...' + "<a onclick=openLetter('" + linkUrl + "') >Mehr dazu</a></div></div></li>")
+    var dateTime = contents[0].values[i][4] + '&nbsp&nbsp' + monthAbbr[parseInt(contents[0].values[i][3]) - 1] + '&nbsp' + contents[0].values[i][2];
+    linkUrl = contents[0].values[i][6];
+    letterContent = contents[0].values[i][5].slice(0, 100);
+    $('#mainTimeLine').append('<li class="timelineItem" id=' + contents[0].values[i][0] + " style='padding-bottom:" + correspondingPaddingBottom + "'><div class='" + direction + "'><div class='flag-wrapper'><span class='flag'>" + author + "</span><span class='time-wrapper'><span class='time'>" + dateTime + "</span></span></div><div class='desc'>" + letterContent + '...' + "<a onclick=openLetter('" + linkUrl + "') >Mehr dazu</a></div></div></li>");
   }
 
   /* return the ids of current visible letters  */
 }
-xhr.send()
+xhr.send();
 
