@@ -12,7 +12,7 @@ function createWordCloud(){
 	
 	
 	var xhr = new XMLHttpRequest();
-	xhr.open('POST', 'http://0.0.0.0:5000/tagcloudapi', true);
+	xhr.open('POST', '/tagcloudapi', true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	xhr.onload = function(e) {
 		//Empty Space

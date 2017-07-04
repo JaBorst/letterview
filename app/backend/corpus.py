@@ -24,6 +24,9 @@ lingstatDB = "lingstatsStem.db"
 rel_pos_tag = 'n'
 measurement = 'tfidf'
 allowed_measurements = ["tfidf", "g2", "g2idf"]
+g2scoringtag='global'
+
+
 import numpy as np
 
 testData = { "corpus1": {"start": "1794-6-13" , "end": "1794-12-25"}
@@ -257,10 +260,10 @@ class CorpusSplits:
 		a = sum([self.tf.get(id,{}).get(word, 0.0001) for id in focussedIds])
 		b = sum([self.tf.get(id,{}).get(word, 0) for id in remainderIds])
 		c = sum([sum(list(self.tf.get(id,{}).values())) for id in focussedIds])
-		print(self.tf.get(id,{}).values())
+		#print(self.tf.get(id,{}).values())
 		d = sum([sum(list(self.tf.get(id,{}).values())) for id in remainderIds])
 		
-		print(a,b,c,d)
+		#print(a,b,c,d)
 		
 		e1 = c * (a + b) / (c + d)
 		e2 = d * (a + b) / (c + d)
@@ -303,23 +306,40 @@ class CorpusSplits:
 
 
 	def getPWordCloudG2_single(self, corpus = None,n=10):
-		highest = self.getHighestRankedG2(corpus,n)
+		global g2scoringtag
+		if g2scoringtag == 'global':
+			highest = self.getHighestRankedG2_global(corpus,n)
+		elif g2scoringtag == 'local':
+			highest = self.getHighestRankedG2(corpus,n)
+					
 		max = highest[0][1]
 		#print("highest", highest)
 		return {w: float(f) / float(max) for (w, f) in highest}
 	
 	def getPWordCloudG2IDF_single(self, corpus = None,n=10):
-		highest = self.getHighestRankedG2IDF(corpus,n)
+		global g2scoringtag
+		if g2scoringtag == 'global':
+			highest = self.getHighestRankedG2IDF_global(corpus,n)
+		elif g2scoringtag == 'local':
+			highest = self.getHighestRankedG2IDF(corpus,n)
 		max = highest[0][1] if highest[0][1] !=0 else 1
 		#print("highest", highest)
 		return {w: float(f) / float(max) for (w, f) in highest}
 
-	def getHighestRankedG2(self, corpus = 0 , n=10):
+	def getHighestRankedG2_global(self, corpus = 0 , n=10):
 		g2 = [(word, self.getG2_single_global( corpus, word)) for word in self.corpusList[corpus].tf.keys()]
 		return sorted(g2, key=operator.itemgetter(1),reverse=True)[:n]
 	
-	def getHighestRankedG2IDF(self, corpus = 0 , n=10):
+	def getHighestRankedG2IDF_global(self, corpus = 0 , n=10):
 		g2 = [(word, self.getG2_single_global( corpus, word)/self.df.get(word, 1)) for word in self.corpusList[corpus].tf.keys()]
+		return sorted(g2, key=operator.itemgetter(1),reverse=True)[:n]
+	
+	def getHighestRankedG2(self, corpus = 0 , n=10):
+		g2 = [(word, self.getG2_single( corpus, word)) for word in self.corpusList[corpus].tf.keys()]
+		return sorted(g2, key=operator.itemgetter(1),reverse=True)[:n]
+	
+	def getHighestRankedG2IDF(self, corpus = 0 , n=10):
+		g2 = [(word, self.getG2_single( corpus, word)/self.df.get(word, 1)) for word in self.corpusList[corpus].tf.keys()]
 		return sorted(g2, key=operator.itemgetter(1),reverse=True)[:n]
 
 	def clear(self):
@@ -462,6 +482,11 @@ class CorpusSplits:
 		if measure in allowed_measurements:
 			measurement = measure
 			print("Measurement changed to: ", measurement)
+			
+	def g2scoringTag(self, tag = "global"):
+		global g2scoringtag
+		g2scoringtag=tag
+		print("Scoring G2 now ",g2scoringtag)
 		
 	def getPWordCloud(self, num=20, method=""):
 		useMethod = ""

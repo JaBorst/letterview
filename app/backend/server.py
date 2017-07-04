@@ -1,6 +1,6 @@
 import os.path
 import wordclouds
-from flask import Flask, Response, url_for, send_file, request, jsonify
+from flask import Flask, Response, url_for, send_file, request, jsonify,send_from_directory
 
 from corpus import *
 
@@ -55,7 +55,9 @@ def get_resource(path):  # pragma: no cover
 
 @app.route('/db', methods=['GET'])
 def db():
-	return send_file(os.path.join(root_dir(),'example.db'))
+	print("Sending Database");
+	print(root_dir(),'example.db')
+	return send_from_directory(root_dir(),'example.db')
 	#content = get_file('../frontend/example.db')
 	#return Response(content)
 
@@ -132,6 +134,15 @@ def changePos():
 	print("changePos")
 	print(request.json)
 	c.set_pos_tag(pt=request.json)
+
+	return jsonify({"status":200})
+
+
+@app.route("/g2scoringTag", methods=['POST'])
+def g2scoringTag():
+	print("g2scoringTag")
+	print(request.json)
+	c.g2scoringTag(tag=request.json)
 
 	return jsonify({"status":200})
 

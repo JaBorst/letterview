@@ -1,9 +1,9 @@
 /* send XMLHTTP request to the local server 127.0.0.1:8887 for the query of sqlite db, it seems the only way to bind sqlite database and html as far as I know for now, and 'sql.js' must be downloaded and included, if back-end server is built, this step can be skipped, all the infos can be transfered to the front via json data */
-console.log('Creating Timeline')
-var xhr = new XMLHttpRequest()
-xhr.open('GET', 'http://0.0.0.0:5000/db', true)
-xhr.responseType = 'arraybuffer'
-var currentIds = []
+console.log('Creating Timeline');
+var xhr = new XMLHttpRequest();
+xhr.open('GET', '/db', true);
+xhr.responseType = 'arraybuffer';
+var currentIds = [];
 
 xhr.onload = function (e) {
   console.log(this.response);
