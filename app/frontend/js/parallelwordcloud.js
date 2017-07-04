@@ -4,12 +4,13 @@
 var result;
 var numberOfWords=10;
 var granularity = 10;
+var opacityPTagClouds = 0.25;
 
 function setPosTag(){
 	var selectBox = document.getElementById("postag");
     var selectedValue = selectBox.options[selectBox.selectedIndex].value;
     //alert(selectedValue);
-	xhr.open('POST', 'http://0.0.0.0:5000/changePos', true);
+	xhr.open('POST', '/changePos', true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	xhr.onload = function(e) {
 		console.log("Pos Tag CHanged");
@@ -17,13 +18,24 @@ function setPosTag(){
 	}
 	xhr.send(JSON.stringify(selectedValue));
 }
-
+function setG2ScoringTag(){
+	var selectBox = document.getElementById("g2scoringtag");
+    var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+    //alert(selectedValue);
+	xhr.open('POST', '/g2scoringTag', true);
+	xhr.setRequestHeader("Content-Type", "application/json");
+	xhr.onload = function(e) {
+		console.log("G2 Scoring Tag changed");
+		
+	}
+	xhr.send(JSON.stringify(selectedValue));
+}
 
 function setMeasure(){
 	var selectBox = document.getElementById("measure");
     var selectedValue = selectBox.options[selectBox.selectedIndex].value;
     //alert(selectedValue);
-	xhr.open('POST', 'http://0.0.0.0:5000/changeMeasure', true);
+	xhr.open('POST', '/changeMeasure', true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	xhr.onload = function(e) {
 		console.log("Measurement Changed");
@@ -93,7 +105,7 @@ function displaySelectedSection(w, corpusName){
 	console.log("in Corpus: " + result[corpusName]["start"]);
 
 	var xhr = new XMLHttpRequest();
-	xhr.open('POST', 'http://0.0.0.0:5000/idsbycorpus', true);
+	xhr.open('POST', '/idsbycorpus', true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	xhr.onload = function(e) {
 		var objResponse = JSON.parse(this.response);
@@ -134,7 +146,7 @@ function createForeignObject(cont,x ,y , size){
     fo.setAttribute('height',"100%");
 	var div = document.createElement("div");
 	div.setAttribute("id", "ptagdiv");
-	div.style.backgroundColor =  hexToRGB("#" + intToRGB(hashCode(cont)), 0.01 );
+	div.setAttribute("class", cont);
 	div.style.fontSize = String(size)+"pt";
 	div.innerHTML= cont;
 	fo.append(div);
@@ -175,37 +187,17 @@ function createSVGContent(svgelement, wordData){
 	var ydelta = 40;
 	var xdelta = 200;
 
-	var connectWords = {};
-
-	//Find out if there are words to connect
-	console.log(Object.keys(wordData).length);
-	for(var i = 1; i < Object.keys(wordData).length; i++) {
-		//console.log(i);
-
-		corpusKeys1 = Object.keys(wordData[Object.keys(wordData)[i]]);
-
-		corpusKeys2 = Object.keys(wordData[Object.keys(wordData)[i-1]]);
-		//console.log(corpusKeys1);
-		var common = $.grep(corpusKeys1, function(element) {
-			    return $.inArray(element, corpusKeys2 ) !== -1;
-			});
-
-		for (w in common){
-			connectWords[Object.keys(wordData)[i]] = {};
-			connectWords[Object.keys(wordData)[i]][w] = {};
-		}
-	}
-	//console.log(connectWords);
-
+	
+	var connectedWords = [];
 	var i = 0 ;
-	savedCoordinates={};
-	savedCoordinatesActual = {};
-	for (corp in wordData){
+	var savedCoordinates={};
+	var savedCoordinatesActual = {};
+	for (var corp in wordData){
 		var y = 20;
 		jObj = createForeignObjectTitle(corp, x, y, 20);
 		jObj.setAttribute("onclick", "corpusWordlines('" + corp + "', '" + Object.keys(wordData[corp]) + "')");
 		svgelement.append(jObj);
-		for (w in wordData[corp]){
+		for (var w in wordData[corp]){
 
 
 			//New ELEMENT
@@ -218,6 +210,9 @@ function createSVGContent(svgelement, wordData){
 
 			//Now See if we already got that element last column
 			if (savedCoordinates.hasOwnProperty(w)){
+				connectedWords.push(w);
+				//jObj.childNodes[0].style.backgroundColor =  hexToRGB("#" + intToRGB(hashCode(w)), 0.15 );
+			
 				//console.log("This word occured last column: " + w);
 				//console.log("Coordinates: x:" + savedCoordinates[w]['x'] + " y:" + savedCoordinates[w]['y']);
 
@@ -233,8 +228,8 @@ function createSVGContent(svgelement, wordData){
 				l.setAttribute("y2",y + paddingCorrection);
 				l.setAttribute("stroke-opacity","0.5");
 				l.setAttribute('stroke-width',"2");
+				l.setAttribute('stroke', hexToRGB("#" + intToRGB(hashCode(w)), opacityPTagClouds ));
 				l.setAttribute('z-index',"-5");
-				l.setAttribute('stroke', hexToRGB("#" + intToRGB(hashCode(w)), 0.3 ));
 				svgelement.append(l);
 
 			}
@@ -244,13 +239,25 @@ function createSVGContent(svgelement, wordData){
 			savedCoordinatesActual[w]['y'] = y;
 
 		}
-		savedCoordinates = {}
+		savedCoordinates = {};
 		savedCoordinates = savedCoordinatesActual;
 		savedCoordinatesActual = {};
 		x = x + xdelta;
 		i = i + 1;
 	}
 
+	
+	//Coloring
+	// display all values
+	for (var i = 0; i < connectedWords.length; i++) {
+		//console.log(connectedWords[i]);
+		//console.log(document.getElementsByClassName(connectedWords[i]));
+		var children = document.getElementsByClassName(connectedWords[i]);
+		for (var j = 0; j < children.length; j++){
+			children[j].style.backgroundColor =  hexToRGB("#" + intToRGB(hashCode(connectedWords[i])), opacityPTagClouds );
+			
+		}
+	}
 
 }
 
@@ -290,9 +297,8 @@ function CreateParallelWordClouds(j){
 	console.log(container.onscroll);
 	console.log("Creating  parallel wordclouds");
 	
-	var api = "http://0.0.0.0:5000/ptagcloudapi";
 	var xhr = new XMLHttpRequest();
-	xhr.open('POST', 'http://0.0.0.0:5000/ptagcloudapi', true);
+	xhr.open('POST', '/ptagcloudapi', true);
 	xhr.setRequestHeader("Content-Type", "application/json");
 	xhr.onload = function(e) {
 		console.log("wordcloud xhr-onload");
@@ -337,31 +343,10 @@ function createDynamicSVGContent(svgelement, wordData){
 	var x = 40;
 	var y = 20;
 	var ydelta = 40;
-	var xdelta = 200;
-
-	var connectWords = {};
-
-	//Find out if there are words to connect
-	console.log(Object.keys(wordData).length);
-	for(var i = 1; i < Object.keys(wordData).length; i++) {
-		//console.log(i);
-
-		corpusKeys1 = Object.keys(wordData[Object.keys(wordData)[i]]);
-
-		corpusKeys2 = Object.keys(wordData[Object.keys(wordData)[i-1]]);
-		//console.log(corpusKeys1);
-		var common = $.grep(corpusKeys1, function(element) {
-			    return $.inArray(element, corpusKeys2 ) !== -1;
-			});
-
-		for (w in common){
-			connectWords[Object.keys(wordData)[i]] = {};
-			connectWords[Object.keys(wordData)[i]][w] = {};
-		}
-	}
-	//console.log(connectWords);
+	var xdelta = 260;
 
 	var i = 0 ;
+	connectedWords = [];
 	savedCoordinates={};
 	savedCoordinatesActual = {};
 	for (corp in wordData){
@@ -382,6 +367,8 @@ function createDynamicSVGContent(svgelement, wordData){
 
 			//Now See if we already got that element last column
 			if (savedCoordinates.hasOwnProperty(w)){
+				jObj.childNodes[0].style.backgroundColor =  hexToRGB("#" + intToRGB(hashCode(w)), 0.3 );
+				connectedWords.push(w);
 				//console.log("This word occured last column: " + w);
 				//console.log("Coordinates: x:" + savedCoordinates[w]['x'] + " y:" + savedCoordinates[w]['y']);
 //
@@ -415,6 +402,17 @@ function createDynamicSVGContent(svgelement, wordData){
 		i = i + 1;
 	}
 
+		//Coloring
+	// display all values
+	for (var i = 0; i < connectedWords.length; i++) {
+		//console.log(connectedWords[i]);
+		//console.log(document.getElementsByClassName(connectedWords[i]));
+		var children = document.getElementsByClassName(connectedWords[i]);
+		for (var j = 0; j < children.length; j++){
+			children[j].style.backgroundColor =  hexToRGB("#" + intToRGB(hashCode(connectedWords[i])), opacityPTagClouds );
+			
+		}
+	}
 
 }
 
@@ -462,9 +460,9 @@ function pTagOnScroll() {
 		console.log("changesd");
 		listOfShownIDs = JSON.parse(localStorage.getItem('currentIDs')).slice(0,3);
 		localStorage.setItem('shownIDs', JSON.stringify(currentIds));
-		var api = "http://0.0.0.0:5000/dptagcloudapi";
+		
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', api, true);
+		xhr.open('POST', "/dptagcloudapi", true);
 		xhr.setRequestHeader("Content-Type", "application/json");
 		xhr.onload = function(e) {
 		console.log("wordcloud xhr-onload");
@@ -488,9 +486,7 @@ function pTagOnScroll() {
 	
 			node.append(svg);		
 			createDynamicSVGContent(svg, objResponse);
-			
-			
-			
+	
 		}
 		
 		
@@ -531,8 +527,6 @@ function corpusWordlines(corpusName, wordlist){
 	var postWordlineData = {wordlist: wordlist, granularity: 100};
 	
 	
-	
-	var api = "http://0.0.0.0:5000/wordlines";
 	var xhr = new XMLHttpRequest();
 	xhr.open('POST', api, true);
 	xhr.setRequestHeader("Content-Type", "application/json");
