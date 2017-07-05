@@ -312,7 +312,8 @@ class CorpusSplits:
 		elif g2scoringtag == 'local':
 			highest = self.getHighestRankedG2(corpus,n)
 					
-		max = highest[0][1]
+		max = highest[0][1] if highest[0][1] !=0 else 1
+		
 		#print("highest", highest)
 		return {w: float(f) / float(max) for (w, f) in highest}
 	

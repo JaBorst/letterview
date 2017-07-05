@@ -34,8 +34,9 @@ def index():
 
 @app.route('/', methods=['GET'])
 def letterViewKeyword():
-    content = get_file('letterViewKeyword.html')
-    return Response(content, mimetype="text/html")
+	print("Sending LetterKeyword.html")
+	content = get_file('letterViewKeyword.html')
+	return Response(content, mimetype="text/html")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -53,7 +54,7 @@ def get_resource(path):  # pragma: no cover
 
 
 
-@app.route('/db', methods=['GET'])
+@app.route('/db', methods=['GET','POST'])
 def db():
 	print("Sending Database");
 	print(root_dir(),'example.db')
